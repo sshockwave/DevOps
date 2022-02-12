@@ -25,7 +25,7 @@ jobs:
       - name: Install Dependencies
         shell: bash -l {0}
         run: |
-          apt install -y autoconf libtools
+          sudo apt install -y autoconf libtools
           conda install conda-build
       - name: Build Package
         shell: bash -l {0}
