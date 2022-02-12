@@ -28,6 +28,4 @@ jobs:
       - name: Build Package
         shell: bash -l {0}
         run: |
-          conda-build .
-
-          
+          conda-build src/bindfs
