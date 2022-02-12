@@ -8,4 +8,4 @@ source:
 requirements:
   build:
     - autoconf
-    - compiler('c')
+    - {{ compiler('c') }}
