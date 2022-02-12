@@ -8,5 +8,5 @@ source:
 requirements:
   build:
     - autoconf
-    - automake
+    - pkg-config
     - {{ compiler('c') }}
