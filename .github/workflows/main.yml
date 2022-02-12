@@ -25,10 +25,8 @@ jobs:
       - name: Install Dependencies
         shell: bash -l {0}
         run: |
-          sudo apt update
-          sudo apt install -y autoconf libtool
           conda install conda-build
       - name: Build Package
         shell: bash -l {0}
         run: |
-          conda-build src/bindfs
+          conda-build src/bindfs -c conda-forge
