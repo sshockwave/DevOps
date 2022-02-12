@@ -8,4 +8,5 @@ source:
 requirements:
   build:
     - autoconf
+    - automake
     - {{ compiler('c') }}
