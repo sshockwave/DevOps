@@ -1,0 +1,11 @@
+package:
+  name: bindfs
+  version: 1.15.1
+source:
+  git_rev: 1.15.1
+  git_url: https://github.com/mpartel/bindfs
+
+requirements:
+  build:
+    - autoconf
+    - compiler('c')
