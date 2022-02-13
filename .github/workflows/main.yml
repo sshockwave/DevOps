@@ -28,4 +28,4 @@ jobs:
       - name: Build Package
         shell: bash -l {0}
         run: |
-          conda-build src/bindfs -c conda-forge
+          conda-build src/bindfs -c conda-forge --token ${{ secrets.ANACONDA_TOKEN }}
