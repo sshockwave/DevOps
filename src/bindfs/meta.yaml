@@ -1,8 +1,10 @@
+{% set version = "1.15.1" %}
+
 package:
   name: bindfs
-  version: 1.15.1
+  version: {{ version }}
 source:
-  git_rev: 1.15.1
+  git_rev: {{ version }}
   git_url: https://github.com/mpartel/bindfs
 
 requirements:
@@ -10,7 +12,8 @@ requirements:
     - automake
     - pkg-config
     - libtool
-    - libfuse
     - {{ compiler('c') }}
+  host:
+    - libfuse
   run:
     - libfuse
