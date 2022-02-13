@@ -1,0 +1,18 @@
+{% set version = "0.12.0" %}
+
+package:
+  name: lux
+  version: {{ version }}
+
+build:
+  number: 0
+  script:
+    - {{ 'go install github.com/iawia002/lux@v' + version }}
+  script_env:
+    - {{ 'GOPATH=' + PREFIX }}
+
+requirements:
+  build:
+    - {{ compiler('go') }}
+  run:
+    - ffmpeg
