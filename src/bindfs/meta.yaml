@@ -7,6 +7,8 @@ source:
 
 requirements:
   build:
-    - autoconf
+    - automake
     - pkg-config
+    - libtool
+    - libfuse
     - {{ compiler('c') }}
