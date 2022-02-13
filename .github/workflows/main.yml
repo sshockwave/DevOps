@@ -34,4 +34,4 @@ jobs:
       - name: Publish to Anaconda
         shell: bash -l {0}
         run: |
-          anaconda upload --token "${{ secrets.ANACONDA_TOKEN }}" "${{ steps.build.output }}"
+          anaconda --token "${{ secrets.ANACONDA_TOKEN }}" upload "${{ steps.build.output }}"
