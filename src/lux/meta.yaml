@@ -13,6 +13,6 @@ build:
 
 requirements:
   build:
-    - {{ compiler('go') }}
+    - go
   run:
     - ffmpeg
