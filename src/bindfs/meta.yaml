@@ -12,3 +12,5 @@ requirements:
     - libtool
     - libfuse
     - {{ compiler('c') }}
+  run:
+    - libfuse
