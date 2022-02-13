@@ -33,4 +33,4 @@ jobs:
       - name: Publish to Anaconda
         shell: bash -l {0}
         run: |
-          anaconda --token "${{ secrets.ANACONDA_TOKEN }}" upload "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2
+          anaconda --token "${{ secrets.ANACONDA_TOKEN }}" upload --force "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2
