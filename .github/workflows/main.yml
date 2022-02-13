@@ -47,7 +47,7 @@ jobs:
         shell: bash -l {0}
         id: build
         run: |
-          conda build src/lux
+          conda build src/lux -c conda-forge
       - name: Publish to Anaconda
         shell: bash -l {0}
         run: |
