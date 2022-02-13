@@ -26,7 +26,7 @@ jobs:
         shell: bash -l {0}
         run: |
           sudo apt update
-          sudo apt install -y pkg-config autoconf
+          sudo apt install -y pkg-config autoconf libfuse-dev
           conda install conda-build
       - name: Build Package
         shell: bash -l {0}
