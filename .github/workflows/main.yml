@@ -29,9 +29,8 @@ jobs:
         shell: bash -l {0}
         id: build
         run: |
-          printf "::set-output name=output::"
-          conda build . -c conda-forge --output
+          conda build src/bindfs -c conda-forge
       - name: Publish to Anaconda
         shell: bash -l {0}
         run: |
-          anaconda --token "${{ secrets.ANACONDA_TOKEN }}" upload "${{ steps.build.output }}"
+          anaconda --token "${{ secrets.ANACONDA_TOKEN }}" upload "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2
