@@ -24,10 +24,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
       - name: Install Dependencies
         shell: bash -l {0}
-        run: |
-          sudo apt update
-          sudo apt install -y pkg-config autoconf fuse
-          conda install conda-build
+        run: conda install conda-build
       - name: Build Package
         shell: bash -l {0}
         run: |
