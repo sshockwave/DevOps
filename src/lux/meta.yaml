@@ -3,7 +3,8 @@
 package:
   name: lux
   version: {{ version }}
-build: number: 0 script:
+build:
+  script:
     - {{ 'go install github.com/iawia002/lux@v' + version }}
   script_env:
     - {{ 'GOPATH=' + PREFIX }}
