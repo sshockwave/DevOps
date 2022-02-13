@@ -6,7 +6,8 @@ package:
 source:
   git_rev: {{ version }}
   git_url: https://github.com/mpartel/bindfs
-
+build:
+  number: 1
 requirements:
   build:
     - automake
