@@ -24,8 +24,14 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
       - name: Install Dependencies
         shell: bash -l {0}
-        run: conda install conda-build
+        run: conda install conda-build anaconda-client
       - name: Build Package
         shell: bash -l {0}
+        id: build
         run: |
-          conda-build src/bindfs -c conda-forge --token ${{ secrets.ANACONDA_TOKEN }}
+          printf "::set-output name=output::"
+          conda build . -c conda-forge --output
+      - name: Publish to Anaconda
+        shell: bash -l {0}
+        run: |
+          anaconda upload --token "${{ secrets.ANACONDA_TOKEN }}" "${{ steps.build.output }}"
