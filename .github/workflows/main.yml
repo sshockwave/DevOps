@@ -19,54 +19,21 @@ jobs:
   bindfs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-      - name: Install Dependencies
-        shell: bash -l {0}
-        run: conda install conda-build anaconda-client
-      - name: Build Package
-        shell: bash -l {0}
-        id: build
-        run: |
-          conda build src/bindfs -c conda-forge
-      - name: Publish to Anaconda
-        shell: bash -l {0}
-        run: |
-          anaconda --token "${{ secrets.ANACONDA_TOKEN }}" upload --force "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2
+      - uses: ./action/conda-build
+        with:
+          recipe-dir: src/bindfs
+          anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
   lux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-      - name: Install Dependencies
-        shell: bash -l {0}
-        run: conda install conda-build anaconda-client
-      - name: Build Package
-        shell: bash -l {0}
-        id: build
-        run: |
-          conda build src/lux -c conda-forge
-      - name: Publish to Anaconda
-        shell: bash -l {0}
-        run: |
-          anaconda --token "${{ secrets.ANACONDA_TOKEN }}" upload --force "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2
+      - uses: ./action/conda-build
+        with:
+          recipe-dir: src/lux
+          anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
   zimg:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-      - name: Install Dependencies
-        shell: bash -l {0}
-        run: conda install conda-build anaconda-client
-      - name: Build Package
-        shell: bash -l {0}
-        id: build
-        run: |
-          conda build src/zimg -c conda-forge
-      - name: Publish to Anaconda
-        shell: bash -l {0}
-        run: |
-          anaconda --token "${{ secrets.ANACONDA_TOKEN }}" upload --force "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2
+      - uses: ./action/conda-build
+        with:
+          recipe-dir: src/zimg
+          anaconda-token: ${{ secrets.ANACONDA_TOKEN }}

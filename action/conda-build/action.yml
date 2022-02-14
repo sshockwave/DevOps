@@ -1,0 +1,29 @@
+name: 'Conda Build'
+description: 'Build and publish conda package on Linux'
+inputs:
+  anaconda-token:
+    description: 'Anaconda token for uploading the package'
+    required: false
+    default: null
+  recipe-dir:
+    description: 'Directory to the conda recipe'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v2
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v2
+    - name: Install Dependencies
+      shell: bash -l {0}
+      run: conda install conda-build anaconda-client
+    - name: Build Package
+      shell: bash -l {0}
+      id: build
+      run: |
+        conda build "${{ inputs.recipe-dir }}" -c conda-forge
+    - name: Publish to Anaconda
+      shell: bash -l {0}
+      if: inputs.anaconda-token
+      run: |
+        anaconda --token "${{ inputs.anaconda-token }}" upload --force "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2
