@@ -19,6 +19,7 @@ jobs:
   bindfs:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: ./action/conda-build
         with:
           recipe-dir: src/bindfs
@@ -26,6 +27,7 @@ jobs:
   lux:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: ./action/conda-build
         with:
           recipe-dir: src/lux
@@ -33,6 +35,7 @@ jobs:
   zimg:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: ./action/conda-build
         with:
           recipe-dir: src/zimg

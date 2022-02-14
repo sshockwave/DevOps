@@ -11,7 +11,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v2
     - name: Setup Miniconda
       uses: conda-incubator/setup-miniconda@v2
     - name: Install Dependencies
@@ -21,7 +20,7 @@ runs:
       shell: bash -l {0}
       id: build
       run: |
-        conda build "${{ inputs.recipe-dir }}" -c conda-forge
+        conda build "${{ inputs.recipe-dir }}" -c sshockwave -c conda-forge
     - name: Publish to Anaconda
       shell: bash -l {0}
       if: inputs.anaconda-token
