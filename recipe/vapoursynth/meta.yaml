@@ -17,4 +17,4 @@ requirements:
     - {{ compiler('cxx') }}
     - zimg
     - python=3
-    - cython >= 0.28
+    - cython>=0.28
