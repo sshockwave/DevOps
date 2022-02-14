@@ -19,3 +19,6 @@ requirements:
     - cython>=0.28
   host:
     - zimg
+    - python=3
+  run:
+    - python=3
