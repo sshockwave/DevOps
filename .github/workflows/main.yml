@@ -40,3 +40,11 @@ jobs:
         with:
           recipe-dir: recipe/zimg
           anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
+  zimg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./action/conda-build
+        with:
+          recipe-dir: recipe/vapoursynth
+          anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
