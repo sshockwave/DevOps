@@ -15,12 +15,12 @@ runs:
       uses: conda-incubator/setup-miniconda@v2
     - name: Install Dependencies
       shell: bash -l {0}
-      run: conda install conda-build anaconda-client
+      run: conda install boa anaconda-client
     - name: Build Package
       shell: bash -l {0}
       id: build
       run: |
-        conda build "${{ inputs.recipe-dir }}" -c sshockwave -c conda-forge
+        conda mambabuild "${{ inputs.recipe-dir }}" -c sshockwave -c conda-forge
     - name: Publish to Anaconda
       shell: bash -l {0}
       if: inputs.anaconda-token
