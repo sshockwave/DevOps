@@ -11,4 +11,5 @@ build:
 requirements:
   build:
     - automake
+    - libtool
     - {{ compiler('cxx') }}
