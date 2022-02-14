@@ -8,6 +8,8 @@ source:
   git_url: https://github.com/sekrit-twc/zimg
 build:
   number: 0
+  run_exports:
+    - zimg
 requirements:
   build:
     - automake

@@ -15,6 +15,7 @@ requirements:
     - libtool
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - zimg
     - python=3
     - cython>=0.28
+  host:
+    - zimg
