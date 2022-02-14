@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./action/conda-build
         with:
-          recipe-dir: src/bindfs
+          recipe-dir: recipe/bindfs
           anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
   lux:
     runs-on: ubuntu-latest
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./action/conda-build
         with:
-          recipe-dir: src/lux
+          recipe-dir: recipe/lux
           anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
   zimg:
     runs-on: ubuntu-latest
@@ -38,5 +38,5 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./action/conda-build
         with:
-          recipe-dir: src/zimg
+          recipe-dir: recipe/zimg
           anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
