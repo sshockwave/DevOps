@@ -1,0 +1,14 @@
+{% set version = "3.0.3" %}
+
+package:
+  name: zimg
+  version: {{ version }}
+source:
+  git_rev: v{{ version }}
+  git_url: https://github.com/sekrit-twc/zimg
+build:
+  number: 0
+requirements:
+  build:
+    - automake
+    - {{ compiler('cxx') }}
