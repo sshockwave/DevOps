@@ -1,0 +1,20 @@
+{% set version = "57" %}
+
+package:
+  name: vapoursynth
+  version: {{ version }}.0.0
+source:
+  git_rev: R{{ version }}
+  git_url: https://github.com/vapoursynth/vapoursynth
+build:
+  number: 0
+requirements:
+  build:
+    - automake
+    - pkg-config
+    - libtool
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - zimg
+    - python=3
+    - cython >= 0.28
