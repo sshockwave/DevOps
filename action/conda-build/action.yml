@@ -15,7 +15,9 @@ runs:
       uses: conda-incubator/setup-miniconda@v2
     - name: Install Dependencies
       shell: bash -l {0}
-      run: conda install boa anaconda-client -c conda-forge
+      run: |
+        conda install mamba -c conda-forge
+        mamba install conda-verify boa anaconda-client -c conda-forge
     - name: Build Package
       shell: bash -l {0}
       id: build
