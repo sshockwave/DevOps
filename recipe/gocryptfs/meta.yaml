@@ -1,0 +1,20 @@
+{% set version = "2.2.1" %}
+
+package:
+  name: gocryptfs
+  version: {{ version }}
+source:
+  git_rev: v{{ version }}
+  git_url: https://github.com/rfjakob/gocryptfs
+build:
+  script:
+    - bash build.bash
+  script_env:
+    - GOPATH={{ PREFIX }}
+
+requirements:
+  build:
+    - go
+    - {{ compiler('c') }}
+  host:
+    - openssl

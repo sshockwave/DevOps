@@ -48,3 +48,11 @@ jobs:
         with:
           recipe-dir: recipe/vapoursynth
           anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
+  vapoursynth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./action/conda-build
+        with:
+          recipe-dir: recipe/gocryptfs
+          anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
