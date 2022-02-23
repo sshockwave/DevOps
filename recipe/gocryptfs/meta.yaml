@@ -8,7 +8,7 @@ source:
   git_url: https://github.com/rfjakob/gocryptfs
 build:
   script:
-    - bash build.bash
+    - bash build-without-openssl.bash
   script_env:
     - GOPATH={{ PREFIX }}
 
@@ -17,5 +17,3 @@ requirements:
     - go
     - pkg-config
     - {{ compiler('c') }}
-  host:
-    - openssl
