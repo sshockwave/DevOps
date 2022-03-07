@@ -21,9 +21,17 @@ source ${PREFIX}/bin/activate # Activate conda in the current shell
 conda init # Modify the bash init scripts to activate conda on startup
 ```
 
-### Useful Mirrors
+### Conda Networking
 
+Useful mirrors:
 * https://mirror.tuna.tsinghua.edu.cn/help/anaconda/
+
+Using proxies by adding the following lines to `~/.condarc`:
+```wgetrc
+proxy_servers:
+    http: http://user:pass@corp.com:8080
+    https: https://user:pass@corp.com:8080
+```
 
 ### Managing Environments
 
