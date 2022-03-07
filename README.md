@@ -3,8 +3,12 @@
 ## Platforms
 ### Rootless Linux
 The rootless mode is recommended for most scenarios since it can be used on shared servers and does no harm to the system.
-Scripts are built around [conda](https://conda.io) as it is currently the only clean way found to install and remove binaries without root-level package managers.
-Conda comes with all the dependencies and thus it works on most distributions.
+Scripts are built around [conda](https://conda.io) because it:
+* is a rootless package manager that neatly installs and removes binaries;
+* comes with all the dependencies and thus works on most linux distributions;
+* uses environments to separate different installations of packages;
+* supports installing self-compiled binaries;
+* is actively maintained by the data science community.
 
 To start using conda, the installation file has to be downloaded to the host.
 See the [doc](https://docs.conda.io/en/latest/miniconda.html) for more information.
@@ -44,13 +48,14 @@ conda deactivate # Exit the environment
 conda info --envs # List all envs
 conda remove -n myenv --all # Remove the environment
 conda env export --from-history # Export marked packages
+conda init --reverse # And remove installation folder to uninstall miniconda
 ```
 
 Here are some frequently used pacakges.
 Enable `conda-forge` channel to include a large set of community-maintained packages.
 
 ```bash
-# Base system utilities
+# System utility
 conda install -c conda-forge git tmux htop
 # Storage related
 conda install -c conda-forge rsync rclone git-annex -c sshockwave bindfs gocryptfs lux
@@ -59,5 +64,10 @@ conda install -c conda-forge numpy scipy tqdm
 conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
 # Web development
 conda install -c conda-forge nodejs
+# Multimedia
+conda install -c conda-forge ffmpeg
+# Build tools
+conda install -c conda-forge cxx-compiler make gdb
 ```
 ### Containers
+Docker is a typical example of container applications.
