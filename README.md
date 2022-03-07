@@ -27,7 +27,7 @@ Useful mirrors:
 * https://mirror.tuna.tsinghua.edu.cn/help/anaconda/
 
 Using proxies by adding the following lines to `~/.condarc`:
-```wgetrc
+```yaml
 proxy_servers:
     http: http://user:pass@corp.com:8080
     https: https://user:pass@corp.com:8080
