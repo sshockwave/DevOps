@@ -16,3 +16,5 @@ requirements:
     - {{ compiler('c') }}
   host:
     - libfuse=2
+  run:
+    - libfuse=2
