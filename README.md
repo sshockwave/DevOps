@@ -56,7 +56,7 @@ Enable `conda-forge` channel to include a large set of community-maintained pack
 
 ```bash
 # System utility
-conda install -c conda-forge git tmux htop
+conda install -c conda-forge git tmux htop vim
 # Storage related
 conda install -c conda-forge rsync rclone git-annex -c sshockwave bindfs gocryptfs lux
 # Data science
