@@ -29,8 +29,13 @@ conda init # Modify the bash init scripts to activate conda on startup
 Useful mirrors:
 * https://mirror.tuna.tsinghua.edu.cn/help/anaconda/
 
-Using proxies by adding the following lines to `~/.condarc`:
+Common configurations in `~/.condarc`:
 ```yaml
+channels:
+  - sshockwave
+  # Enable `conda-forge` channel to include a large set of community-maintained packages.
+  - conda-forge
+  - defaults
 proxy_servers:
     http: http://user:pass@corp.com:8080
     https: https://user:pass@corp.com:8080
@@ -48,26 +53,33 @@ conda deactivate # Exit the environment
 conda info --envs # List all envs
 conda remove -n myenv --all # Remove the environment
 conda env export --from-history # Export marked packages
-conda init --reverse # And remove installation folder to uninstall miniconda
+```
+
+Uninstalling miniconda:
+```bash
+conda init --reverse
+rm ~/.conda -r
+rm ${HOME}/miniconda3 -r # Or other locations of installation
+rm ~/.condarc # Optionally remove the config file
 ```
 
 Here are some frequently used pacakges.
-Enable `conda-forge` channel to include a large set of community-maintained packages.
+Most of them require the `conda-forge` channel.
 
 ```bash
 # System utility
-conda install -c conda-forge git tmux htop vim
+conda install git tmux htop vim
 # Storage related
-conda install -c conda-forge rsync rclone git-annex -c sshockwave bindfs gocryptfs lux
+conda install rsync rclone git-annex bindfs gocryptfs lux
 # Data science
-conda install -c conda-forge numpy scipy tqdm
-conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+conda install numpy scipy tqdm
+conda install -c pytorch pytorch torchvision torchaudio cudatoolkit=11.3
 # Web development
-conda install -c conda-forge nodejs
+conda install nodejs
 # Multimedia
-conda install -c conda-forge ffmpeg
+conda install ffmpeg
 # Build tools
-conda install -c conda-forge cxx-compiler make gdb
+conda install cxx-compiler make gdb
 ```
 ### Containers
 Docker is a typical example of container applications.
