@@ -5,9 +5,15 @@ package:
   version: {{ version }}
 build:
   script:
-    - {{ 'go install github.com/iawia002/lux@v' + version }}
+    - go install github.com/iawia002/lux@v{{ version }}
   script_env:
-    - {{ 'GOPATH=' + PREFIX }}
+    - GOPATH={{ PREFIX }}
+    {% if target_platform == 'linux-64' %}
+    - GOARCH=arm64
+    {% endif %}
+    {% if target_platform == 'linux-aarch64' %}
+    - GOARCH=arm64
+    {% endif %}
 
 requirements:
   build:
