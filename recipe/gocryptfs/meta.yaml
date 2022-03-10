@@ -11,6 +11,12 @@ build:
     - bash build-without-openssl.bash
   script_env:
     - GOPATH={{ PREFIX }}
+    {% if target_platform == 'linux-64' %}
+    - GOARCH=arm64
+    {% endif %}
+    {% if target_platform == 'linux-aarch64' %}
+    - GOARCH=arm64
+    {% endif %}
 
 requirements:
   build:
