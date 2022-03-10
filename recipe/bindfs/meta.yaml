@@ -15,6 +15,6 @@ requirements:
     - libtool
     - {{ compiler('c') }}
   host:
-    - libfuse=2
+    - libfuse
   run:
-    - libfuse=2
+    - libfuse
