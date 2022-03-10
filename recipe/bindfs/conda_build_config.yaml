@@ -1,5 +1,3 @@
-cxx_compiler:
-  - g++
 target_platform:
   - linux-aarch64
   - linux-64
