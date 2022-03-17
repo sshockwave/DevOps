@@ -83,3 +83,14 @@ conda install cxx-compiler make gdb
 ```
 ### Containers
 Docker is a typical example of container applications.
+### Browsers
+Sandbox applications based on JavaScript or WebAssembly.
+
+Bypassing anti-selenium check:
+```python
+option = webdriver.ChromeOptions()
+option.add_experimental_option("excludeSwitches", ["enable-automation"])
+option.add_experimental_option('useAutomationExtension', False)
+option.add_argument('--disable-blink-features=AutomationControlled')
+driver = webdriver.Chrome(options=option)
+```
