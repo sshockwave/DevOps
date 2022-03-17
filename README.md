@@ -94,9 +94,17 @@ option.add_experimental_option('useAutomationExtension', False)
 option.add_argument('--disable-blink-features=AutomationControlled')
 driver = webdriver.Chrome(options=option)
 ```
+## Proxy Settings
+[GitHub language highlight file](https://github.com/github/linguist/blob/master/lib/linguist/languages.yml)
 ### apt
 Proxy setting:
-```bash
+```
 Acquire::http::proxy "http://127.0.0.1:10809/";
 Acquire::https::proxy "https://127.0.0.1:10809/";
+```
+### wget
+```wgetrc
+use_proxy=yes
+http_proxy=172.23.96.1:20809
+https_proxy=172.23.96.1:20809
 ```
