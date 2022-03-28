@@ -94,6 +94,24 @@ option.add_experimental_option('useAutomationExtension', False)
 option.add_argument('--disable-blink-features=AutomationControlled')
 driver = webdriver.Chrome(options=option)
 ```
+### WSL
+To mount another disk on WSL startup, add `/etc/wsl.conf`: 
+```ini
+[boot]
+command="bash /etc/bootup.sh"
+```
+and create `/etc/bootup.sh`(or anywhere you like):
+```bash
+#!/bin/bash
+# Needed to enable WSL interop in startup script
+# See https://github.com/microsoft/wsl/issues/8056
+export WSL_INTEROP=/run/WSL/10_interop
+# Mount physical disk
+# --vhd option is enabled in WSL from Microsoft Store
+# See https://docs.microsoft.com/en-us/windows/wsl/wsl2-mount-disk#mount-a-vhd-in-wsl
+/mnt/c/Windows/system32/wsl.exe --mount --vhd "C:\\Users\\sshockwave\\Softwares\\Linux\\home.vhdx" --bare
+mount /dev/sdd /home
+```
 ## Proxy Settings
 [GitHub language highlight file](https://github.com/github/linguist/blob/master/lib/linguist/languages.yml)
 ### apt
