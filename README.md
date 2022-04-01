@@ -105,11 +105,18 @@ and create `/etc/bootup.sh`(or anywhere you like):
 #!/bin/bash
 # Needed to enable WSL interop in startup script
 # See https://github.com/microsoft/wsl/issues/8056
-export WSL_INTEROP=/run/WSL/10_interop
+for socket in /run/WSL/*; do
+   if [ "$socket" == "/run/WSL/1_interop" ]
+   then continue
+   fi
+   if ss -elx | grep -q "$socket"; then
+      export WSL_INTEROP=$socket
+   fi
+done
 # Mount physical disk
 # --vhd option is enabled in WSL from Microsoft Store
 # See https://docs.microsoft.com/en-us/windows/wsl/wsl2-mount-disk#mount-a-vhd-in-wsl
-/mnt/c/Windows/system32/wsl.exe --mount --vhd "C:\\Users\\sshockwave\\Softwares\\Linux\\home.vhdx" --bare
+WSL_INTEROP=/run/WSL/10_interop /mnt/c/Windows/system32/wsl.exe --mount --vhd "C:\\Users\\sshockwave\\Softwares\\Linux\\home.vhdx" --bare
 mount /dev/sdd /home
 ```
 ## Proxy Settings
