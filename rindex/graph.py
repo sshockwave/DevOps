@@ -108,4 +108,4 @@ def top_sort(vertices: Iterable[Hashable], edges: Iterable[Tuple[Hashable, Hasha
             deg[t] -= 1
             if deg[t] == 0:
                 ans.append(t)
-    return ans
+    return [dfn[i] for i in ans]

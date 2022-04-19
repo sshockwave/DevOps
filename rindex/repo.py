@@ -141,7 +141,7 @@ class RepoConfig:
         assert isinstance(options, dict)
         original_path: dict[PurePath, str] = dict()
         for path in options.keys():
-            new_path = self.sanitize_path(path)
+            new_path = sanitize_path(path)
             if new_path in original_path:
                 assert False, f'Path conflict: "{path}" and "{original_path[new_path]}"'
             original_path[new_path] = path
@@ -152,7 +152,8 @@ class RepoConfig:
         edges = []
         for path in paths:
             former_half, parent_node = self.config.last_value_node(path)
-            edges.append((path, former_half))
+            if path != former_half:
+                edges.append((path, former_half))
             latter_half = path.relative_to(former_half)
             # cur_node: self.config[former_half / latter_half]
             cfg = parent_node[latter_half].val = parent_node.val.calc(
