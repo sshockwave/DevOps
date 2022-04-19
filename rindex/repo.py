@@ -31,6 +31,7 @@ class PathConfig:
     r"""
     Metadata options
     """
+    save_mtime: bool
     timezone: tzinfo
 
     r"""
@@ -84,6 +85,9 @@ class PathConfig:
                 case 'timezone':
                     assert isinstance(val, str)
                     self.timezone = val
+                case 'save_mtime':
+                    assert isinstance(val, bool)
+                    self.save_mtime = val
                 case _:
                     assert False, f'Unrecognized option: {key}'
 
@@ -141,6 +145,9 @@ def export_fs_entry(d: FSEntry, cfg: PathConfig) -> FSEntry:
         d['mtime'] = d['mtime'].astimezone(pytz.timezone(cfg.timezone))
     else:
         d['mtime'] = d['mtime'].astimezone(cfg.timezone)
+    if not cfg.save_mtime:
+        del d['mtime']
+        del d['mtime_ns']
     return pure_fs_entry(d)
 
 
@@ -166,6 +173,7 @@ class RepoConfig:
         self.config.val = PathConfig()
         self.config.val.standalone = 1
         self.config.val.timezone = datetime.fromtimestamp(0).astimezone().tzinfo
+        self.config.val.save_mtime = True
         edges = []
         for path in paths:
             former_half, parent_node = self.config.last_value_node(path)

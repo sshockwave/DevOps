@@ -83,7 +83,8 @@ class SyncWorker:
         import json
         from copy import copy
         v = copy(v)
-        v['mtime'] = v['mtime'].isoformat()
+        if 'mtime' in v:
+            v['mtime'] = v['mtime'].isoformat()
         self.fscache[get_cache_key(a)] = json.dumps(v)
 
     def sync(self, file_path: Path, dest: PurePath):
