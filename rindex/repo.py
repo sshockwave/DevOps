@@ -1,6 +1,6 @@
 from pathlib import Path, PurePath
 from typing import Literal, Tuple, TypedDict, Optional
-from datetime import datetime
+from datetime import tzinfo, datetime
 from .store import CacheStore
 
 
@@ -27,6 +27,11 @@ class PathConfig:
     bind: PurePath | Literal[False] = False
     overlay: PurePath | Literal[False] = False
     ignore: bool = False
+
+    r"""
+    Metadata options
+    """
+    timezone: tzinfo
 
     r"""
     If standalone, the index file is separated.
@@ -74,6 +79,9 @@ class PathConfig:
                 case 'standalone':
                     assert isinstance(val, bool)
                     self.standalone = val
+                case 'timezone':
+                    assert isinstance(val, str)
+                    self.timezone = val
                 case _:
                     assert False, f'Unrecognized option: {key}'
 
@@ -123,8 +131,13 @@ def pure_fs_entry(d: FSEntry) -> FSEntry:
     return {k: v for k, v in d.items() if not k.startswith('_')}
 
 
-def export_fs_entry(d: FSEntry) -> FSEntry:
+def export_fs_entry(d: FSEntry, cfg: PathConfig) -> FSEntry:
     assert d['_is_file'], f'Cannot export directories.'
+    if isinstance(cfg.timezone, str):
+        import pytz
+        d['mtime'] = d['mtime'].astimezone(pytz.timezone(cfg.timezone))
+    else:
+        d['mtime'] = d['mtime'].astimezone(cfg.timezone)
     return pure_fs_entry(d)
 
 
@@ -149,6 +162,7 @@ class RepoConfig:
         paths.sort()
         self.config.val = PathConfig()
         self.config.val.standalone = 1
+        self.config.val.timezone = datetime.fromtimestamp(0).astimezone().tzinfo
         edges = []
         for path in paths:
             former_half, parent_node = self.config.last_value_node(path)
@@ -261,7 +275,7 @@ class Repository:
             v = self.cache[k]
             if not allow_unused and v.get('_ref_count', 0) == 0:
                 continue
-            data[k.as_posix()] = export_fs_entry(v)
+            data[k.as_posix()] = export_fs_entry(v, self.config[k])
         if len(data) == 0:
             idx_file.unlink(missing_ok=True)
             # TODO Remove folder if empty

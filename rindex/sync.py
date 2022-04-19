@@ -10,9 +10,7 @@ def stat_to_internal(info: DirEntry | Path) -> FSEntry:
     from datetime import datetime, timezone
 
     def to_dt(x):
-        import pytz
-        # TODO: allow custom timezone
-        return datetime.fromtimestamp(x, tz=timezone.utc).astimezone(pytz.timezone('Asia/Shanghai'))
+        return datetime.fromtimestamp(x, tz=timezone.utc)
     stat = info.stat()
     ans['mtime'] = to_dt(stat.st_mtime)
     ans['mtime_ns'] = stat.st_mtime_ns
