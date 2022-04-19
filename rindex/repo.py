@@ -286,7 +286,7 @@ class Repository:
             v = self.cache[k]
             if not allow_unused and v.get('_ref_count', 0) == 0:
                 continue
-            data[k.as_posix()] = export_fs_entry(v, self.config[k])
+            data[k.relative_to(rel_path).as_posix()] = export_fs_entry(v, self.config[k])
         if len(data) > 0:
             if rel_path in self.cache:
                 val = self.cache[rel_path]
