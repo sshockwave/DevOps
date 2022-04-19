@@ -77,7 +77,9 @@ class PathConfig:
                             assert data_val == True
                             self.ignore = True
                 case 'standalone':
-                    assert isinstance(val, bool)
+                    if isinstance(val, bool):
+                        val = 1
+                    assert isinstance(val, int)
                     self.standalone = val
                 case 'timezone':
                     assert isinstance(val, str)
