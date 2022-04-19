@@ -18,8 +18,11 @@ def main(args=None):
     from .repo import Repository
     r = Repository(args.dest)
     from .sync import SyncWorker
-    w = SyncWorker(r)
-    from pathlib import Path
-    w.sync(Path(args.src), r.rel_root)
-    w.close()
+    import dbm
+    import os
+    with dbm.open(os.path.join(*r.repo_root.parts, r.FSCACHE_FILENAME), flag='c') as fscache:
+        w = SyncWorker(r, fscache)
+        from pathlib import Path
+        w.sync(Path(args.src), r.rel_root)
+        w.close()
     r.close()

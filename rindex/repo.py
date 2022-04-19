@@ -210,6 +210,7 @@ def is_empty(path: Path):
 class Repository:
     INDEX_FILENAME = 'index.toml'
     CONFIG_FILENAME = 'rindex.toml'
+    FSCACHE_FILENAME = 'fscache.dat'
     repo_root: Path
     rel_root: PurePath
     cache: CacheStore

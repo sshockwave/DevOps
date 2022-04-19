@@ -54,15 +54,37 @@ def stat_to_internal(info: DirEntry | Path, old_index: FSEntry=None) -> FSEntry:
     return ans
 
 
+def get_cache_key(a: DirEntry):
+    return f'{a.stat().st_dev},{a.inode()}'
+
 class SyncWorker:
     repo: Repository
-    def __init__(self, repo) -> None:
+    def __init__(self, repo, fscache) -> None:
         self.repo = repo
+        self.fscache = fscache
         from tqdm import tqdm
         self.pbar = tqdm(position=0)
     
     def close(self):
         self.pbar.close()
+
+    def read_cache(self, a):
+        import json
+        d = self.fscache.get(get_cache_key(a))
+        if d is None:
+            return
+        d = json.loads(d)
+        if 'mtime' in d:
+            from datetime import datetime
+            d['mtime'] = datetime.fromisoformat(d['mtime'])
+        return d
+
+    def write_cache(self, a, v):
+        import json
+        from copy import copy
+        v = copy(v)
+        v['mtime'] = v['mtime'].isoformat()
+        self.fscache[get_cache_key(a)] = json.dumps(v)
 
     def sync(self, file_path: Path, dest: PurePath):
         if file_path.is_file():
@@ -76,7 +98,10 @@ class SyncWorker:
                 repo_path = dest / entry.name
                 if entry.is_file():
                     self.repo.open_file(repo_path)
-                    self.repo.set_file_entry(repo_path, stat_to_internal(entry, self.repo.get_file_entry(repo_path)))
+                    fsentry = stat_to_internal(entry, self.read_cache(entry))
+                    from .repo import pure_fs_entry
+                    self.write_cache(entry, pure_fs_entry(fsentry))
+                    self.repo.set_file_entry(repo_path, fsentry)
                     self.pbar.update()
                 elif entry.is_dir():
                     self.repo.open_folder(repo_path)
