@@ -40,6 +40,7 @@ I have to run `diff` or compute its checksum all over again.
 3. `git` and `git-annex` are great,
 but I don't trust checksums-addressed storage on my personal files.
 Checksums are totally fine for detection of corruption, however.
+The performance on large number of files is also a serious issue.
 4. `rclone` [modifies your filename](https://rclone.org/overview/#restricted-filenames),
 which is an unfortunate necessity.
 I want to be notified whenever it takes place.
