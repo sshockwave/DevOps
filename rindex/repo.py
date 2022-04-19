@@ -200,6 +200,12 @@ class RepoConfig:
         return parent_node.val.calc(path.relative_to(parent_path))
 
 
+def is_empty(path: Path):
+    from os import scandir
+    with scandir(path) as it:
+        return not any(it)
+
+
 class Repository:
     INDEX_FILENAME = 'index.toml'
     CONFIG_FILENAME = 'rindex.toml'
@@ -256,6 +262,11 @@ class Repository:
             return
         if '_exported' not in val:
             self.export_folder_index(rel_path, allow_unused=True)
+        abs_path = self.repo_root / rel_path
+        if '_exported' not in self.cache[rel_path]:
+            (abs_path / self.INDEX_FILENAME).unlink(missing_ok=True)
+        if abs_path.exists() and abs_path.is_dir() and is_empty(abs_path):
+            abs_path.rmdir()
         del self.cache[rel_path]
         if rel_path.parent != rel_path:
             self.close_folder(rel_path.parent)
@@ -263,8 +274,6 @@ class Repository:
     def export_folder_index(self, rel_path: PurePath, allow_unused):
         if self.config[rel_path].standalone == 0:
             return
-        if rel_path in self.cache:
-            self.cache[rel_path]['_exported'] = True
         idx_file = self.repo_root / rel_path / self.INDEX_FILENAME
         idx_file.parent.mkdir(parents=True, exist_ok=True)
         data = dict()
@@ -278,10 +287,11 @@ class Repository:
             if not allow_unused and v.get('_ref_count', 0) == 0:
                 continue
             data[k.as_posix()] = export_fs_entry(v, self.config[k])
-        if len(data) == 0:
-            idx_file.unlink(missing_ok=True)
-            # TODO Remove folder if empty
-        else:
+        if len(data) > 0:
+            if rel_path in self.cache:
+                val = self.cache[rel_path]
+                val['_exported'] = True
+                self.cache[rel_path] = val
             from .store import safe_dump
             with safe_dump(idx_file) as f:
                 import tomli_w
