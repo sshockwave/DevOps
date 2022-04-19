@@ -96,6 +96,7 @@ class FSEntry(TypedDict, total=False):
     _is_file: bool
     _ref_count: int
 
+    size: int
     # Modified time
     mtime: datetime
     mtime_ns: int

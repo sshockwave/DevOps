@@ -21,4 +21,5 @@ def main(args=None):
     w = SyncWorker(r)
     from pathlib import Path
     w.sync(Path(args.src), r.rel_root)
+    w.close()
     r.close()
