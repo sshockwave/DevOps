@@ -1,3 +1,4 @@
 tomli
 tomli-w
 coloredlogs
+pytz
