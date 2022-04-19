@@ -35,7 +35,7 @@ def stat_to_internal(info: DirEntry | Path, old_index: FSEntry=None) -> FSEntry:
             if ans['size'] > 4 * 1024 * 1024:
                 from tqdm import tqdm
                 pbar = tqdm(total=ans['size'], unit='B', unit_scale=True,
-                            unit_divisor=1024, desc=info.name, position=1)
+                            unit_divisor=1024, desc=info.name)
             while chunk := f.read(4096):
                 crc32 = zlib.crc32(chunk, crc32)
                 md5.update(chunk)
@@ -63,8 +63,8 @@ class SyncWorker:
         self.repo = repo
         self.fscache = fscache
         from tqdm import tqdm
-        self.pbar = tqdm(position=0)
-    
+        self.pbar = tqdm()
+
     def close(self):
         self.pbar.close()
 
