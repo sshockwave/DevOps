@@ -10,9 +10,12 @@ it follows all symlinks.
 
 ## Features
 
-Planning:
 * Pure text storage of metadata: modtime, checksum, ...
 * Fast rebuild based on local filesystem cache.
+
+### Roadmap
+
+* Content checksums of images and audios (ignoring ID3, EXIF, etc.)
 * Suggestions for problematic filenames (long file names, invalid encoding, special characters, etc.)
 * Symlink-like concept inside the repo using `mapping` and `overlay`.
 * Recover files from the index using another source.
