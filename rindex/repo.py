@@ -93,11 +93,10 @@ class PathConfig:
 
 
 
-class FSEntry(TypedDict, total=False):
+class FileEntry(TypedDict, total=False):
     # Keys starting with '_' means that it will not appear in the final index
 
     # Relative path to the root when creating the base
-    _is_file: bool
     _ref_count: int
 
     size: int
@@ -114,10 +113,14 @@ class FSEntry(TypedDict, total=False):
     sha512: str
 
 
-def create_file_fs_entry(d: dict) -> FSEntry:
+class DirEntry(TypedDict, total=False):
+    _ref_count: int
+    _exported: int
+
+
+def create_file_fs_entry(d: dict) -> FileEntry:
     assert isinstance(d, dict), f'Index data error.'
-    val = FSEntry()
-    val['_is_file'] = True
+    val = FileEntry()
     for k, v in d.items():
         match k:
             case 'mtime':
@@ -134,12 +137,11 @@ def create_file_fs_entry(d: dict) -> FSEntry:
     return val
 
 
-def pure_fs_entry(d: FSEntry) -> FSEntry:
+def pure_fs_entry(d: FileEntry) -> FileEntry:
     return {k: v for k, v in d.items() if not k.startswith('_')}
 
 
-def export_fs_entry(d: FSEntry, cfg: PathConfig) -> FSEntry:
-    assert d['_is_file'], f'Cannot export directories.'
+def export_fs_entry(d: FileEntry, cfg: PathConfig) -> FileEntry:
     if isinstance(cfg.timezone, str):
         import pytz
         d['mtime'] = d['mtime'].astimezone(pytz.timezone(cfg.timezone))
@@ -149,12 +151,6 @@ def export_fs_entry(d: FSEntry, cfg: PathConfig) -> FSEntry:
         del d['mtime']
         del d['mtime_ns']
     return pure_fs_entry(d)
-
-
-def compare_metadata(a: FSEntry, b: FSEntry):
-    if a['_is_file'] != b['_is_file']:
-        return False
-    return pure_fs_entry(a) == pure_fs_entry(b)
 
 
 class RepoConfig:
@@ -221,7 +217,8 @@ class Repository:
     FSCACHE_FILENAME = 'fscache.dat'
     repo_root: Path
     rel_root: PurePath
-    cache: CacheStore
+    dir_cache: CacheStore[PurePath, DirEntry]
+    file_cache: CacheStore[PurePath, FileEntry]
 
     def __init__(self, root: Path) -> None:
         self.repo_root, self.rel_root = self.repo_split(root)
@@ -229,7 +226,8 @@ class Repository:
         with open(self.repo_root / self.CONFIG_FILENAME, 'rb') as f:
             import tomli
             self.config = RepoConfig(tomli.load(f))
-        self.cache = dict()
+        self.dir_cache = dict()
+        self.file_cache = dict()
         # TODO check: whether self.rel_root contains a mapping source and dest
 
     def repo_split(self, path: Path) -> Tuple[Optional[Path], PurePath]:
@@ -241,16 +239,11 @@ class Repository:
         return None, path
 
     def open_folder(self, rel_path: PurePath):
-        val = self.cache.get(rel_path)
+        val: DirEntry = self.dir_cache.get(rel_path)
         if val is not None:
-            if val['_is_file']:
-                # File in old index
-                # It should not have been opened
-                assert val['_ref_count'] == 0
-            else:
-                val['_ref_count'] += 1
-                self.cache[rel_path] = val
-                return
+            val['_ref_count'] += 1
+            self.dir_cache[rel_path] = val
+            return
         if rel_path.parent != rel_path:
             self.open_folder(rel_path.parent)
         # Check if index file exists
@@ -259,58 +252,53 @@ class Repository:
             # A full scan is needed,
             # otherwise data loss can happen on config change.
             self.load_index(index_file)
-        val = FSEntry()
-        val['_is_file'] = False
+        val = DirEntry()
         val['_ref_count'] = 1
-        self.cache[rel_path] = val
+        self.dir_cache[rel_path] = val
 
     def close_folder(self, rel_path: PurePath):
-        val = self.cache[rel_path]
+        val: DirEntry = self.dir_cache[rel_path]
         val['_ref_count'] -= 1
         if val['_ref_count'] > 0:
-            self.cache[rel_path] = val
+            self.dir_cache[rel_path] = val
             return
         if '_exported' not in val:
             self.export_folder_index(rel_path, allow_unused=True)
         abs_path = self.repo_root / rel_path
-        if '_exported' not in self.cache[rel_path]:
+        if '_exported' not in self.dir_cache[rel_path]:
             (abs_path / self.INDEX_FILENAME).unlink(missing_ok=True)
         if abs_path.exists() and abs_path.is_dir() and is_empty(abs_path):
             abs_path.rmdir()
-        del self.cache[rel_path]
+        del self.dir_cache[rel_path]
         if rel_path.parent != rel_path:
             self.close_folder(rel_path.parent)
 
-    def export_folder_index(self, rel_path: PurePath, allow_unused):
+    def export_folder_index(self, rel_path: PurePath, allow_unused: bool):
         if self.config[rel_path].standalone == 0:
             return
         idx_file = self.repo_root / rel_path / self.INDEX_FILENAME
         idx_file.parent.mkdir(parents=True, exist_ok=True)
         data = dict()
-        for k in self.cache:
-            if k == rel_path:
-                continue
+        for k in self.file_cache:
             if not k.is_relative_to(rel_path):
                 # TODO improve speed
                 continue
-            v = self.cache[k]
+            v = self.file_cache[k]
             if not allow_unused and v.get('_ref_count', 0) == 0:
                 continue
             data[k.relative_to(rel_path).as_posix()] = export_fs_entry(v, self.config[k])
         if len(data) > 0:
-            if rel_path in self.cache:
-                val = self.cache[rel_path]
+            if rel_path in self.dir_cache:
+                val = self.dir_cache[rel_path]
                 val['_exported'] = True
-                self.cache[rel_path] = val
+                self.dir_cache[rel_path] = val
             from .store import safe_dump
             with safe_dump(idx_file) as f:
                 import tomli_w
                 tomli_w.dump(data, f)
         # Safely dumped. We can remove the files from the cache now.
         to_del = []
-        for k in self.cache:
-            if k == rel_path:
-                continue
+        for k in self.file_cache:
             if not k.is_relative_to(rel_path):
                 # TODO improve speed
                 continue
@@ -319,37 +307,37 @@ class Repository:
             self.close_file(p)
 
     def close(self):
-        assert len(self.cache) == 0
-        del self.cache
+        assert len(self.dir_cache) == 0
+        assert len(self.file_cache) == 0
+        del self.dir_cache
+        del self.file_cache
 
     def open_file(self, rel_path: PurePath):
-        val = self.cache.get(rel_path)
+        val: FileEntry = self.file_cache.get(rel_path)
         if val is not None:
-            assert val['_is_file']
             val['_ref_count'] = val.get('_ref_count', 0) + 1
             return
-        val = FSEntry()
+        val = FileEntry()
         val['_ref_count'] = 1
-        self.cache[rel_path] = val
+        self.file_cache[rel_path] = val
 
     def close_file(self, rel_path: PurePath):
-        val = self.cache[rel_path]
-        assert val['_is_file']
-        if '_ref_count' not in self.cache:
+        val: FileEntry = self.file_cache[rel_path]
+        if '_ref_count' not in self.file_cache:
             val['_ref_count'] = 0
         else:
-            assert val['_ref_count'] >= 0
             val['_ref_count'] -= 1
+            assert val['_ref_count'] >= 0
         if val['_ref_count'] == 0:
-            del self.cache[rel_path]
+            del self.file_cache[rel_path]
 
-    def get_file_entry(self, rel_path: PurePath) -> Optional[FSEntry]:
-        return self.cache.get(rel_path)
+    def get_file_entry(self, rel_path: PurePath) -> Optional[FileEntry]:
+        return self.file_cache.get(rel_path)
 
-    def set_file_entry(self, rel_path: PurePath, val: FSEntry):
-        if (old_val := self.cache.get(rel_path)) is not None:
+    def set_file_entry(self, rel_path: PurePath, val: FileEntry):
+        if (old_val := self.file_cache.get(rel_path)) is not None:
             val['_ref_count'] = old_val.get('_ref_count', 0) + 1
-        self.cache[rel_path] = val
+        self.file_cache[rel_path] = val
 
     def prune_unopened_entries(self, rel_path: PurePath):
         from os import scandir
@@ -362,7 +350,7 @@ class Repository:
                     continue
                 fp = rel_path / entry.name
                 assert entry.is_dir(), f'Path {fp} is neither a file or a directory'
-                if fp not in self.cache or self.cache[fp].get('_ref_count', 0) == 0:
+                if self.dir_cache.get(fp, dict()).get('_ref_count', 0) == 0:
                     from shutil import rmtree
                     rmtree(entry.path)
 
@@ -376,6 +364,8 @@ class Repository:
             for p, d in data.items():
                 assert isinstance(d, dict), f'Index file error.'
                 tp = rel_path / p
-                assert tp not in self.cache, f'Duplicated entry in {tp}'
-                self.cache[tp] = create_file_fs_entry(d)
+                if tp in self.file_cache:
+                    from .logger import log
+                    log.warn(f'Duplicated entry at {tp}')
+                self.file_cache[tp] = create_file_fs_entry(d)
 

@@ -26,6 +26,10 @@ class CacheStore(Generic[K, V]):
     @abstractmethod
     def __delitem__(self, k: K):
         raise NotImplementedError
+    
+    @abstractmethod
+    def get(self, k: K, default=None):
+        raise NotImplementedError
 
 @contextmanager
 def safe_dump(path, mode='wb'):

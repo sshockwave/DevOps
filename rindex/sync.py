@@ -1,16 +1,15 @@
-from .repo import Repository
+from .repo import FileEntry, Repository
 from pathlib import Path, PurePath
 from os import DirEntry
-from .repo import FSEntry
+from .repo import FileEntry
 
 
-def file_unchanged(old_index: FSEntry, new_index: FSEntry) -> bool:
+def file_unchanged(old_index: FileEntry, new_index: FileEntry) -> bool:
     return old_index.get('mtime') == new_index['mtime'] and old_index.get('size') == new_index['size']
 
-def stat_to_internal(info: DirEntry | Path, old_index: FSEntry=None) -> FSEntry:
-    ans = FSEntry()
+def stat_to_internal(info: DirEntry | Path, old_index: FileEntry=None) -> FileEntry:
+    ans = FileEntry()
     assert info.is_file()
-    ans['_is_file'] = True
     from datetime import datetime, timezone
 
     def to_dt(x):
