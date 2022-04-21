@@ -95,18 +95,8 @@ class Repository:
     def __init__(self, root: Path) -> None:
         self.repo_root, self.rel_root = self.repo_split(root)
         assert self.repo_root is not None, f'{self.CONFIG_FILENAME} must exist for a repository.'
-        from .filter.metadata import ModtimeFilter, ModtimeNSFilter, SizeFilter
-        from .filter.checksum import HashlibFilter, CRC32Filter
-        self.filters = [
-            SizeFilter(),
-            ModtimeFilter(),
-            ModtimeNSFilter(),
-            CRC32Filter(),
-            HashlibFilter('md5'),
-            HashlibFilter('sha1'),
-            HashlibFilter('sha256'),
-            HashlibFilter('sha512'),
-        ]
+        from .filter import make_filters
+        self.filters = make_filters
         with open(self.repo_root / self.CONFIG_FILENAME, 'rb') as f:
             import tomli
             self.config = RepoConfig(tomli.load(f), self.filters)
