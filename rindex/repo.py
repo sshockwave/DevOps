@@ -6,22 +6,6 @@ from .filter import Filter
 from .store import CacheStore
 
 
-def create_file_fs_entry(d: dict, filters: List[Filter]) -> FileEntry:
-    assert isinstance(d, dict), f'Index data error.'
-    val = FileEntry()
-    for k, v in d.items():
-        match k:
-            case 'mtime' | 'mtime_ns':
-                pass
-            case 'crc32' | 'md5' | 'sha1' | 'sha256' | 'sha512':
-                pass
-            case '_':
-                assert False, f'Unrecognized index key: "{k}"'
-    for f in filters:
-        f.load_from_index(d, val)
-    return val
-
-
 class RepoConfig:
     def __init__(self, options: dict[str, dict], filters: List[Filter]) -> None:
         from .graph import Tree
@@ -245,5 +229,9 @@ class Repository:
                 if tp in self.file_cache:
                     from .logger import log
                     log.warn(f'Duplicated entry at {tp}')
-                self.file_cache[tp] = create_file_fs_entry(d, self.filters)
+                val = FileEntry()
+                for f in self.filters:
+                    f.load_from_index(d, val)
+                assert len(d) == 0, f'Unrecognized indices: {d}'
+                self.file_cache[tp] = val
 

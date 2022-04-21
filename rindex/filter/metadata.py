@@ -20,11 +20,13 @@ class MetadataFilter(Filter):
         if (v := mtdt.get(self.METADATA_NAME, None)) is not None:
             assert isinstance(v, self.METADATA_TYPE), f'Field {self.METADATA_NAME} has type {type(v)}, but {self.METADATA_TYPE} is expected.'
             output[self.METADATA_NAME] = v
+            del mtdt[self.METADATA_NAME]
 
     def load_from_index(self, mtdt, output):
         if (v := mtdt.get(self.METADATA_NAME, None)) is not None:
             assert isinstance(v, self.METADATA_TYPE), f'Field {self.METADATA_NAME} has type {type(v)}, but {self.METADATA_TYPE} is expected.'
             output[self.METADATA_NAME] = v
+            del mtdt[self.METADATA_NAME]
 
     def export_to_fscache(self, entry, output):
         if (v := entry.get(self.METADATA_NAME, None)) is not None:
