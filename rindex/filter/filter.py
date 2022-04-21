@@ -56,5 +56,5 @@ class Filter(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def parse_content(self, cfg: PathConfig, output: FileEntry) -> Generator[None, bytes, None]:
+    def parse_content(self, output: FileEntry) -> Generator[None, bytes, None]:
         raise NotImplementedError

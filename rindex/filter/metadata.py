@@ -82,7 +82,7 @@ class ModtimeFilter(MetadataFilter):
         # Should have been fetched before checking file_changed()
         assert self.METADATA_NAME in output
 
-    def parse_content(self, cfg, output):
+    def parse_content(self, output):
         assert False
 
 class ModtimeNSFilter(MetadataFilter):
@@ -100,5 +100,5 @@ class ModtimeNSFilter(MetadataFilter):
         # Should have been fetched before checking file_changed()
         assert self.METADATA_NAME in output
 
-    def parse_content(self, cfg, output):
+    def parse_content(self, output):
         assert False

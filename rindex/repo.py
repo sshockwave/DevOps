@@ -14,8 +14,7 @@ def create_file_fs_entry(d: dict, filters: List[Filter]) -> FileEntry:
             case 'mtime' | 'mtime_ns':
                 pass
             case 'crc32' | 'md5' | 'sha1' | 'sha256' | 'sha512':
-                assert isinstance(v, str)
-                val[k] = v.lower()
+                pass
             case '_':
                 assert False, f'Unrecognized index key: "{k}"'
     for f in filters:
@@ -107,7 +106,16 @@ class Repository:
         self.repo_root, self.rel_root = self.repo_split(root)
         assert self.repo_root is not None, f'{self.CONFIG_FILENAME} must exist for a repository.'
         from .filter.metadata import ModtimeFilter, ModtimeNSFilter
-        self.filters = [ModtimeFilter(), ModtimeNSFilter()]
+        from .filter.checksum import HashlibFilter, CRC32Filter
+        self.filters = [
+            ModtimeFilter(),
+            ModtimeNSFilter(),
+            CRC32Filter(),
+            HashlibFilter('md5'),
+            HashlibFilter('sha1'),
+            HashlibFilter('sha256'),
+            HashlibFilter('sha512'),
+        ]
         with open(self.repo_root / self.CONFIG_FILENAME, 'rb') as f:
             import tomli
             self.config = RepoConfig(tomli.load(f), self.filters)
