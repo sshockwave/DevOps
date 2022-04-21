@@ -1,4 +1,4 @@
-from argparse import Action, ArgumentParser
+from argparse import ArgumentParser
 
 
 def create_parser() -> ArgumentParser:

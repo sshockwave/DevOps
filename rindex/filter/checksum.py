@@ -22,7 +22,7 @@ class HashlibFilter(MetadataFilter):
 
     def parse_content(self, output):
         import hashlib
-        ans = getattr(hashlib, self.hash_type)
+        ans = getattr(hashlib, self.hash_type)()
         while chunk := (yield):
             ans.update(chunk)
         output[self.METADATA_NAME] = ans.hexdigest()

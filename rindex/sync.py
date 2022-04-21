@@ -22,18 +22,14 @@ def stat_to_internal(info: DirEntry | Path, filters: List[Filter], cfg: PathConf
         file_changed = True
     else:
         file_changed = any(f.file_changed(old_index, ans) for f in filters)
-    if not file_changed:
-        for i in old_index:
-            ans[i] = old_index[i]
-    else:
-        it = [f.parse_content(ans) for f in filters]
-        next_it = []
-        for f in it:
-            try:
-                next(f)
-                next_it.append(f)
-            except StopIteration:
-                pass
+    next_it = []
+    for f in filters:
+        flag = f.put_index(old_index, file_changed, cfg, ans)
+        if flag is False:
+            gen = f.parse_content(ans)
+            next(gen)
+            next_it.append(gen)
+    if len(next_it) > 0:
         it = next_it
         with open(info.path, 'rb') as f:
             pbar = None
@@ -41,12 +37,13 @@ def stat_to_internal(info: DirEntry | Path, filters: List[Filter], cfg: PathConf
                 from tqdm import tqdm
                 pbar = tqdm(total=ans['size'], unit='B', unit_scale=True,
                             unit_divisor=1024, desc=info.name)
-            while chunk := f.read(4096):
+            while len(it) > 0:
+                chunk = f.read(4096)
                 next_it = []
-                for f in it:
+                for g in it:
                     try:
-                        f.send(chunk)
-                        next_it.append(f)
+                        g.send(chunk)
+                        next_it.append(g)
                     except StopIteration:
                         pass
                 it = next_it
