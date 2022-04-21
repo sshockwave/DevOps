@@ -1,4 +1,2 @@
-import coloredlogs
-import logging
-log = logging.getLogger('rindex')
-coloredlogs.install(level='WARNING', logger=log)
+from logging import getLogger
+log = getLogger('rindex')
