@@ -102,3 +102,21 @@ class ModtimeNSFilter(MetadataFilter):
 
     def parse_content(self, output):
         assert False
+
+class SizeFilter(MetadataFilter):
+    OPTION_NAME = 'save_size'
+    METADATA_NAME = 'size'
+    METADATA_TYPE = int
+
+    def make_default_config(self, cfg):
+        cfg[self.OPTION_NAME] = True
+
+    def file_changed(self, cache, cur_stat):
+        return cache.get(self.METADATA_NAME) != cur_stat[self.METADATA_NAME]
+
+    def put_index(self, cache, file_changed, cfg, output):
+        # Should have been fetched before checking file_changed()
+        assert self.METADATA_NAME in output
+
+    def parse_content(self, output):
+        assert False

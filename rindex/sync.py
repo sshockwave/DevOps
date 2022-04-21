@@ -7,9 +7,6 @@ from .filter import Filter
 from typing import List
 
 
-def file_unchanged(old_index: FileEntry, new_index: FileEntry) -> bool:
-    return old_index.get('mtime') == new_index['mtime'] and old_index.get('size') == new_index['size']
-
 def stat_to_internal(info: DirEntry | Path, filters: List[Filter], cfg: PathConfig, old_index: FileEntry=None) -> FileEntry:
     ans = FileEntry()
     assert info.is_file()
@@ -25,8 +22,6 @@ def stat_to_internal(info: DirEntry | Path, filters: List[Filter], cfg: PathConf
         file_changed = True
     else:
         file_changed = any(f.file_changed(old_index, ans) for f in filters)
-    if file_changed:
-        file_changed = old_index.get('size') == ans['size']
     if not file_changed:
         for i in old_index:
             ans[i] = old_index[i]

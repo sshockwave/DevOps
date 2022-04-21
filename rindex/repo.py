@@ -105,9 +105,10 @@ class Repository:
     def __init__(self, root: Path) -> None:
         self.repo_root, self.rel_root = self.repo_split(root)
         assert self.repo_root is not None, f'{self.CONFIG_FILENAME} must exist for a repository.'
-        from .filter.metadata import ModtimeFilter, ModtimeNSFilter
+        from .filter.metadata import ModtimeFilter, ModtimeNSFilter, SizeFilter
         from .filter.checksum import HashlibFilter, CRC32Filter
         self.filters = [
+            SizeFilter(),
             ModtimeFilter(),
             ModtimeNSFilter(),
             CRC32Filter(),
