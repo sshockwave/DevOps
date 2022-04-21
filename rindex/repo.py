@@ -1,139 +1,25 @@
 from pathlib import Path, PurePath
-from typing import Literal, Tuple, TypedDict, Optional
-from datetime import tzinfo, datetime
+from typing import Tuple, Optional, List
+from .entry import FileEntry, DirEntry, PathConfig, sanitize_path
+
+from .filter import Filter
 from .store import CacheStore
 
 
-def sanitize_path(p: str) -> str:
-    p: PurePath = PurePath(p)
-    assert not p.is_absolute(
-    ), f'Path "{t}" should be relative, not absolute.'
-    for t in p.parts:
-        assert t != '.', f'Path "{t}" cannot contain "."'
-        assert t != '..', f'Path "{t}" cannot contain ".."'
-    return p
-
-class PathConfig:
-    # The following defaults are for the root
-    # All paths inherit its config from its parent
-
-    r"""
-    Binding means using the exact same content.
-    Overlay folders can modify or add extra files.
-    Or you can ignore folders.
-
-    You can set at most one option among these three.
-    """
-    bind: PurePath | Literal[False] = False
-    overlay: PurePath | Literal[False] = False
-    ignore: bool = False
-
-    r"""
-    Metadata options
-    """
-    save_mtime: bool
-    timezone: tzinfo
-
-    r"""
-    If standalone, the index file is separated.
-    standalone = 1: index file of the current file / folder is separated
-    standalone > 1: All files within this depth should be individually indexed
-    """
-    standalone: int = 0
-
-    def calc(self, rel_path: PurePath) -> 'PathConfig':
-        from copy import copy
-        that = copy(self)
-        if self.bind is not False:
-            that.bind /= rel_path
-        if self.overlay is not False:
-            that.overlay /= rel_path
-        that.standalone = max(that.standalone - len(rel_path.parts), 0)
-        return that
-
-    def join_options(self, opt: dict):
-        assert isinstance(opt, dict), f'Config "{opt}" is not a table.'
-        for key, val in opt.items():
-            match key:
-                case 'data':
-                    assert isinstance(val, dict), 'Key "data" must be a dict.'
-                    options = ['plain', 'bind', 'overlay', 'ignore']
-                    assert len(
-                        val) == 1, f'Option "data" must contain exactly one of {",".join(options)}'
-                    for o in options[1:]:
-                        # Clear up current options
-                        setattr(self, o, False)
-                    data_key = list(val.keys())[0]
-                    data_val = val[data_key]
-                    match data_key:
-                        case 'plain':
-                            assert data_val == True
-                        case 'bind':
-                            assert isinstance(data_val, str)
-                            self.bind = sanitize_path(data_val)
-                        case 'overlay':
-                            assert isinstance(data_val, str)
-                            self.overlay = sanitize_path(data_val)
-                        case 'ignore':
-                            assert data_val == True
-                            self.ignore = True
-                case 'standalone':
-                    if isinstance(val, bool):
-                        val = 1
-                    assert isinstance(val, int)
-                    self.standalone = val
-                case 'timezone':
-                    assert isinstance(val, str)
-                    self.timezone = val
-                case 'save_mtime':
-                    assert isinstance(val, bool)
-                    self.save_mtime = val
-                case _:
-                    assert False, f'Unrecognized option: {key}'
-
-
-
-class FileEntry(TypedDict, total=False):
-    # Keys starting with '_' means that it will not appear in the final index
-
-    # Relative path to the root when creating the base
-    _ref_count: int
-
-    size: int
-    # Modified time
-    mtime: datetime
-    mtime_ns: int
-    # Not planned: atime
-
-    # Checksums
-    crc32: str
-    md5: str
-    sha1: str
-    sha256: str
-    sha512: str
-
-
-class DirEntry(TypedDict, total=False):
-    _ref_count: int
-    _exported: int
-
-
-def create_file_fs_entry(d: dict) -> FileEntry:
+def create_file_fs_entry(d: dict, filters: List[Filter]) -> FileEntry:
     assert isinstance(d, dict), f'Index data error.'
     val = FileEntry()
     for k, v in d.items():
         match k:
-            case 'mtime':
-                assert isinstance(v, datetime)
-                val[k] = v
-            case 'mtime_ns':
-                assert isinstance(v, int)
-                val[k] = v
+            case 'mtime' | 'mtime_ns':
+                pass
             case 'crc32' | 'md5' | 'sha1' | 'sha256' | 'sha512':
                 assert isinstance(v, str)
                 val[k] = v.lower()
             case '_':
                 assert False, f'Unrecognized index key: "{k}"'
+    for f in filters:
+        f.load_from_index(d, val)
     return val
 
 
@@ -141,20 +27,15 @@ def pure_fs_entry(d: FileEntry) -> FileEntry:
     return {k: v for k, v in d.items() if not k.startswith('_')}
 
 
-def export_fs_entry(d: FileEntry, cfg: PathConfig) -> FileEntry:
-    if isinstance(cfg.timezone, str):
-        import pytz
-        d['mtime'] = d['mtime'].astimezone(pytz.timezone(cfg.timezone))
-    else:
-        d['mtime'] = d['mtime'].astimezone(cfg.timezone)
-    if not cfg.save_mtime:
-        del d['mtime']
-        del d['mtime_ns']
-    return pure_fs_entry(d)
+def export_fs_entry(d: FileEntry, cfg: PathConfig, filters: List[Filter]) -> FileEntry:
+    ret = pure_fs_entry(d)
+    for f in filters:
+        f.export_to_index(ret, cfg, ret)
+    return ret
 
 
 class RepoConfig:
-    def __init__(self, options: dict[str, dict]) -> None:
+    def __init__(self, options: dict[str, dict], filters: List[Filter]) -> None:
         from .graph import Tree
         self.config = Tree[PathConfig]()
         assert isinstance(options, dict)
@@ -168,8 +49,8 @@ class RepoConfig:
         paths.sort()
         self.config.val = PathConfig()
         self.config.val.standalone = 1
-        self.config.val.timezone = datetime.fromtimestamp(0).astimezone().tzinfo
-        self.config.val.save_mtime = True
+        for f in filters:
+            f.make_default_config(self.config.val)
         edges = []
         for path in paths:
             former_half, parent_node = self.config.last_value_node(path)
@@ -181,6 +62,8 @@ class RepoConfig:
                 latter_half)
             opt = options[original_path[path]]
             cfg.join_options(opt)
+            for f in filters:
+                f.load_path_config(opt, cfg)
             if v := cfg.bind:
                 edges.append((v, path))
             if v := cfg.overlay:
@@ -223,9 +106,11 @@ class Repository:
     def __init__(self, root: Path) -> None:
         self.repo_root, self.rel_root = self.repo_split(root)
         assert self.repo_root is not None, f'{self.CONFIG_FILENAME} must exist for a repository.'
+        from .filter.metadata import ModtimeFilter, ModtimeNSFilter
+        self.filters = [ModtimeFilter(), ModtimeNSFilter()]
         with open(self.repo_root / self.CONFIG_FILENAME, 'rb') as f:
             import tomli
-            self.config = RepoConfig(tomli.load(f))
+            self.config = RepoConfig(tomli.load(f), self.filters)
         self.dir_cache = dict()
         self.file_cache = dict()
         # TODO check: whether self.rel_root contains a mapping source and dest
@@ -286,7 +171,7 @@ class Repository:
             v = self.file_cache[k]
             if not allow_unused and v.get('_ref_count', 0) == 0:
                 continue
-            data[k.relative_to(rel_path).as_posix()] = export_fs_entry(v, self.config[k])
+            data[k.relative_to(rel_path).as_posix()] = export_fs_entry(v, self.config[k], self.filters)
         if len(data) > 0:
             if rel_path in self.dir_cache:
                 val = self.dir_cache[rel_path]
@@ -367,5 +252,5 @@ class Repository:
                 if tp in self.file_cache:
                     from .logger import log
                     log.warn(f'Duplicated entry at {tp}')
-                self.file_cache[tp] = create_file_fs_entry(d)
+                self.file_cache[tp] = create_file_fs_entry(d, self.filters)
 
