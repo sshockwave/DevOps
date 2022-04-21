@@ -77,18 +77,17 @@ class SyncWorker:
         if d is None:
             return
         d = json.loads(d)
-        if 'mtime' in d:
-            from datetime import datetime
-            d['mtime'] = datetime.fromisoformat(d['mtime'])
-        return d
+        v = FileEntry()
+        for f in self.repo.filters:
+            f.load_from_fscache(d, v)
+        return v
 
     def write_cache(self, a, v):
         import json
-        from copy import copy
-        v = copy(v)
-        if 'mtime' in v:
-            v['mtime'] = v['mtime'].isoformat()
-        self.fscache[get_cache_key(a)] = json.dumps(v)
+        new_v = FileEntry()
+        for f in self.repo.filters:
+            f.export_to_fscache(v, new_v)
+        self.fscache[get_cache_key(a)] = json.dumps(new_v)
 
     def sync(self, file_path: Path, dest: PurePath):
         if file_path.is_file():
@@ -108,8 +107,7 @@ class SyncWorker:
                         self.repo.config[repo_path],
                         self.read_cache(entry),
                     )
-                    from .repo import pure_fs_entry
-                    self.write_cache(entry, pure_fs_entry(fsentry))
+                    self.write_cache(entry, fsentry)
                     self.repo.set_file_entry(repo_path, fsentry)
                     self.pbar.update()
                 elif entry.is_dir():

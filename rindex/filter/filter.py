@@ -27,7 +27,7 @@ class Filter(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def export_to_fscache(self, entry: FileEntry, cfg: PathConfig, output: FileEntry) -> None:
+    def export_to_fscache(self, entry: FileEntry, output: FileEntry) -> None:
         r"""
         Need to be JSON-compatible
         """

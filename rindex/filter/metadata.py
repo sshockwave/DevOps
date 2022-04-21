@@ -7,10 +7,10 @@ class MetadataFilter(Filter):
     METADATA_TYPE: type
 
     def load_path_config(self, opt, output):
-        val = opt.get(self.OPTION_NAME, False)
-        assert isinstance(val, bool), f'Option {self.OPTION_NAME} should be a bool.'
-        output[self.OPTION_NAME] = val
         if self.OPTION_NAME in opt:
+            val = opt.get(self.OPTION_NAME, False)
+            assert isinstance(val, bool), f'Option {self.OPTION_NAME} should be a bool.'
+            output[self.OPTION_NAME] = val
             del opt[self.OPTION_NAME]
 
     def calc_relative_config(self, cfg, rel_path, output):
@@ -26,7 +26,7 @@ class MetadataFilter(Filter):
             assert isinstance(v, self.METADATA_TYPE), f'Field {self.METADATA_NAME} has type {type(v)}, but {self.METADATA_TYPE} is expected.'
             output[self.METADATA_NAME] = v
 
-    def export_to_fscache(self, entry, cfg, output):
+    def export_to_fscache(self, entry, output):
         if (v := entry.get(self.METADATA_NAME, None)) is not None:
             output[self.METADATA_NAME] = v
 
@@ -61,7 +61,7 @@ class ModtimeFilter(MetadataFilter):
             assert isinstance(v, str)
             output[self.METADATA_NAME] = datetime.fromisoformat(v)
 
-    def export_to_fscache(self, entry, cfg, output):
+    def export_to_fscache(self, entry, output):
         if (v := entry.get(self.METADATA_NAME)):
             assert isinstance(v, datetime)
             output[self.METADATA_NAME] = v.isoformat()
@@ -91,7 +91,7 @@ class ModtimeNSFilter(MetadataFilter):
     METADATA_TYPE = int
 
     def make_default_config(self, cfg):
-        cfg[self.OPTION_NAME] = True
+        cfg[self.OPTION_NAME] = False
 
     def file_changed(self, cache, cur_stat):
         return False

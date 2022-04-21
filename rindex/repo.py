@@ -22,17 +22,6 @@ def create_file_fs_entry(d: dict, filters: List[Filter]) -> FileEntry:
     return val
 
 
-def pure_fs_entry(d: FileEntry) -> FileEntry:
-    return {k: v for k, v in d.items() if not k.startswith('_')}
-
-
-def export_fs_entry(d: FileEntry, cfg: PathConfig, filters: List[Filter]) -> FileEntry:
-    ret = pure_fs_entry(d)
-    for f in filters:
-        f.export_to_index(ret, cfg, ret)
-    return ret
-
-
 class RepoConfig:
     def __init__(self, options: dict[str, dict], filters: List[Filter]) -> None:
         from .graph import Tree
@@ -101,6 +90,7 @@ class Repository:
     rel_root: PurePath
     dir_cache: CacheStore[PurePath, DirEntry]
     file_cache: CacheStore[PurePath, FileEntry]
+    filters: List[Filter]
 
     def __init__(self, root: Path) -> None:
         self.repo_root, self.rel_root = self.repo_split(root)
@@ -180,7 +170,11 @@ class Repository:
             v = self.file_cache[k]
             if not allow_unused and v.get('_ref_count', 0) == 0:
                 continue
-            data[k.relative_to(rel_path).as_posix()] = export_fs_entry(v, self.config[k], self.filters)
+            new_v = FileEntry()
+            cfg = self.config[k]
+            for f in self.filters:
+                f.export_to_index(v, cfg, new_v)
+            data[k.relative_to(rel_path).as_posix()] = new_v
         if len(data) > 0:
             if rel_path in self.dir_cache:
                 val = self.dir_cache[rel_path]
