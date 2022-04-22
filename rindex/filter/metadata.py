@@ -56,7 +56,7 @@ class ModtimeFilter(MetadataFilter):
             del opt[self.TIMEZONE_NAME]
             assert isinstance(val, str), f'Option {self.TIMEZONE_NAME} should be a str.'
             import pytz
-            output.timezone = pytz.timezone(val)
+            output[self.TIMEZONE_NAME] = pytz.timezone(val)
 
     def load_from_fscache(self, mtdt, output):
         if (v := mtdt.get(self.METADATA_NAME, None)) is not None:
@@ -70,12 +70,12 @@ class ModtimeFilter(MetadataFilter):
 
     def export_to_index(self, entry, cfg, output):
         if cfg[self.OPTION_NAME] and (v := entry.get(self.METADATA_NAME)):
-            output[self.METADATA_NAME] = v.astimezone(cfg.timezone)
+            output[self.METADATA_NAME] = v.astimezone(cfg[self.TIMEZONE_NAME])
 
     def make_default_config(self, cfg):
         cfg[self.OPTION_NAME] = True
         from datetime import datetime
-        cfg.timezone = datetime.fromtimestamp(0).astimezone().tzinfo
+        cfg[self.TIMEZONE_NAME] = datetime.fromtimestamp(0).astimezone().tzinfo
 
     def file_changed(self, cache, cur_stat):
         return cache.get(self.METADATA_NAME) != cur_stat[self.METADATA_NAME]
