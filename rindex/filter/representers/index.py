@@ -75,3 +75,39 @@ class IndexRepresenter(Filter):
         if rel_path.parent != rel_path:
             repo.close_folder(rel_path.parent)
         return True
+    
+    def open_file(self, repo, rel_path: PurePath, cfg: PathConfig) -> bool:
+        if self.OPTION_NAME not in cfg[OPTION_DATA_NAME]:
+            return False
+        val = repo.file_cache.get(rel_path)
+        if val is not None:
+            val['_ref_count'] = val.get('_ref_count', 0) + 1
+            return
+        val = dict()
+        val['_ref_count'] = 1
+        repo.file_cache[rel_path] = val
+    
+    def close_file(self, repo, rel_path: PurePath, cfg: PathConfig) -> bool:
+        if self.OPTION_NAME not in cfg[OPTION_DATA_NAME]:
+            return False
+        val = repo.file_cache[rel_path]
+        if '_ref_count' not in repo.file_cache:
+            val['_ref_count'] = 0
+        else:
+            val['_ref_count'] -= 1
+            assert val['_ref_count'] >= 0
+        if val['_ref_count'] == 0:
+            del repo.file_cache[rel_path]
+    
+    def get_file_entry(self, repo, rel_path: PurePath, cfg: PathConfig):
+        if self.OPTION_NAME not in cfg[OPTION_DATA_NAME]:
+            return None
+        return repo.file_cache.get(rel_path)
+
+    def set_file_entry(self, repo, rel_path: PurePath, val: dict, cfg: PathConfig) -> bool:
+        if self.OPTION_NAME not in cfg[OPTION_DATA_NAME]:
+            return False
+        if (old_val := repo.file_cache.get(rel_path)) is not None:
+            val['_ref_count'] = old_val.get('_ref_count', 0) + 1
+        repo.file_cache[rel_path] = val
+        return True

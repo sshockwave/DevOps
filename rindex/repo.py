@@ -152,32 +152,24 @@ class Repository:
         del self.dir_cache
         del self.file_cache
 
-    def open_file(self, rel_path: PurePath):
-        val: FileEntry = self.file_cache.get(rel_path)
-        if val is not None:
-            val['_ref_count'] = val.get('_ref_count', 0) + 1
-            return
-        val = FileEntry()
-        val['_ref_count'] = 1
-        self.file_cache[rel_path] = val
+    def open_file(self, rel_path: PurePath) -> bool:
+        cfg = self.config[rel_path]
+        return any(f.open_file(self, rel_path, cfg) for f in self.filters)
 
-    def close_file(self, rel_path: PurePath):
-        val: FileEntry = self.file_cache[rel_path]
-        if '_ref_count' not in self.file_cache:
-            val['_ref_count'] = 0
-        else:
-            val['_ref_count'] -= 1
-            assert val['_ref_count'] >= 0
-        if val['_ref_count'] == 0:
-            del self.file_cache[rel_path]
+    def close_file(self, rel_path: PurePath) -> bool:
+        cfg = self.config[rel_path]
+        return any(f.close_file(self, rel_path, cfg) for f in self.filters)
 
     def get_file_entry(self, rel_path: PurePath) -> Optional[FileEntry]:
-        return self.file_cache.get(rel_path)
+        cfg = self.config[rel_path]
+        for f in self.filters:
+            v = f.get_file_entry(self, rel_path, cfg)
+            if v is not None:
+                return v
 
     def set_file_entry(self, rel_path: PurePath, val: FileEntry):
-        if (old_val := self.file_cache.get(rel_path)) is not None:
-            val['_ref_count'] = old_val.get('_ref_count', 0) + 1
-        self.file_cache[rel_path] = val
+        cfg = self.config[rel_path]
+        return any(f.set_file_entry(self, rel_path, val, cfg) for f in self.filters)
 
     def prune_unopened_entries(self, rel_path: PurePath):
         from os import scandir
@@ -203,13 +195,8 @@ class Repository:
             assert isinstance(data, dict), f'Index file on "{rel_path}" is not a dict.'
             for p, d in data.items():
                 assert isinstance(d, dict), f'Index file error.'
-                tp = rel_path / p
-                if tp in self.file_cache:
-                    from .logger import log
-                    log.warn(f'Duplicated entry at {tp}')
                 val = FileEntry()
                 for f in self.filters:
                     f.load_from_index(d, val)
                 assert len(d) == 0, f'Unrecognized indices: {d}'
-                self.file_cache[tp] = val
-
+                self.set_file_entry(rel_path /p, val)
