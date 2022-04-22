@@ -107,23 +107,8 @@ class Repository:
                 return p, PurePath(path.relative_to(p))
         return None, path
 
-    def open_folder(self, rel_path: PurePath):
-        val: DirEntry = self.dir_cache.get(rel_path)
-        if val is not None:
-            val['_ref_count'] += 1
-            self.dir_cache[rel_path] = val
-            return
-        if rel_path.parent != rel_path:
-            self.open_folder(rel_path.parent)
-        # Check if index file exists
-        index_file = self.repo_root / rel_path / self.INDEX_FILENAME
-        if index_file.exists():
-            # A full scan is needed,
-            # otherwise data loss can happen on config change.
-            self.load_index(index_file)
-        val = DirEntry()
-        val['_ref_count'] = 1
-        self.dir_cache[rel_path] = val
+    def open_folder(self, rel_path: PurePath) -> bool:
+        return any(f.open_folder(self, rel_path) for f in self.filters)
 
     def close_folder(self, rel_path: PurePath):
         val: DirEntry = self.dir_cache[rel_path]

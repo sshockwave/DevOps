@@ -52,6 +52,18 @@ class Filter:
     def parse_content(self, output: FileEntry) -> Generator[None, bytes, None]:
         pass
 
+    def open_folder(self, repo: 'Filter', rel_path: PurePath) -> bool:
+        r"""
+        Return whether the folder is handled by this filter
+        """
+        return False
+    
+    def close_folder(self, repo: 'Filter', rel_path: PurePath) -> bool:
+        r"""
+        Return whether the folder is handled by this filter
+        """
+        return False
+
 
 class MetadataFilter(Filter, metaclass=ABCMeta):
     OPTION_NAME: str
