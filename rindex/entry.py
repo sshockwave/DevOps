@@ -26,23 +26,6 @@ class PathConfig(dict):
     overlay: PurePath | Literal[False] = False
     ignore: bool = False
 
-    r"""
-    If standalone, the index file is separated.
-    standalone = 1: index file of the current file / folder is separated
-    standalone > 1: All files within this depth should be individually indexed
-    """
-    standalone: int = 0
-
-    def calc(self, rel_path: PurePath) -> 'PathConfig':
-        from copy import copy
-        that = copy(self)
-        if self.bind is not False:
-            that.bind /= rel_path
-        if self.overlay is not False:
-            that.overlay /= rel_path
-        that.standalone = max(that.standalone - len(rel_path.parts), 0)
-        return that
-
     def join_options(self, opt: dict):
         assert isinstance(opt, dict), f'Config "{opt}" is not a table.'
         for key, val in opt.items():
@@ -69,11 +52,6 @@ class PathConfig(dict):
                         case 'ignore':
                             assert data_val == True
                             self.ignore = True
-                case 'standalone':
-                    if isinstance(val, bool):
-                        val = 1
-                    assert isinstance(val, int)
-                    self.standalone = val
 
 class FileEntry(TypedDict, total=False):
     # Keys starting with '_' means that it will not appear in the final index

@@ -10,6 +10,7 @@ class RepoConfig:
     def __init__(self, options: dict[str, dict], filters: List[Filter]) -> None:
         from .graph import Tree
         self.config = Tree[PathConfig]()
+        self.filters = filters
         assert isinstance(options, dict)
         original_path: dict[PurePath, str] = dict()
         for path in options.keys():
@@ -20,7 +21,6 @@ class RepoConfig:
         paths = list(original_path.keys())
         paths.sort()
         self.config.val = PathConfig()
-        self.config.val.standalone = 1
         for f in filters:
             f.make_default_config(self.config.val)
         edges = []
@@ -30,8 +30,8 @@ class RepoConfig:
                 edges.append((path, former_half))
             latter_half = path.relative_to(former_half)
             # cur_node: self.config[former_half / latter_half]
-            cfg = parent_node[latter_half].val = parent_node.val.calc(
-                latter_half)
+            cfg = self.calc_rel_cfg(parent_node.val, latter_half)
+            parent_node[latter_half].val = cfg
             opt = options[original_path[path]]
             cfg.join_options(opt)
             for f in filters:
@@ -40,7 +40,7 @@ class RepoConfig:
                 edges.append((v, path))
             if v := cfg.overlay:
                 edges.append((v, path))
-        assert self.config.val.standalone > 0, 'The root must be standalone.'
+        assert self.config.val['standalone'] > 0, 'The root must be standalone.'
         from .graph import top_sort
         que = top_sort(paths, edges)
         assert len(que) == len(paths), 'Cycle detected in the mappings.'
@@ -55,9 +55,20 @@ class RepoConfig:
                 elif cfg.overlay:
                     cfg.overlay = addr
 
+    def calc_rel_cfg(self, parent_cfg: PathConfig, rel_path: PurePath) -> PathConfig:
+        from copy import copy
+        that = copy(parent_cfg)
+        if parent_cfg.bind is not False:
+            that.bind /= rel_path
+        if parent_cfg.overlay is not False:
+            that.overlay /= rel_path
+        for f in self.filters:
+            f.calc_relative_config(parent_cfg, rel_path, that)
+        return that
+
     def __getitem__(self, path: PurePath):
         parent_path, parent_node = self.config.last_value_node(path)
-        return parent_node.val.calc(path.relative_to(parent_path))
+        return self.calc_rel_cfg(parent_node.val, path.relative_to(parent_path))
 
 
 def is_empty(path: Path):
@@ -132,7 +143,7 @@ class Repository:
             self.close_folder(rel_path.parent)
 
     def export_folder_index(self, rel_path: PurePath, allow_unused: bool):
-        if self.config[rel_path].standalone == 0:
+        if self.config[rel_path]['standalone'] == 0:
             return
         idx_file = self.repo_root / rel_path / self.INDEX_FILENAME
         idx_file.parent.mkdir(parents=True, exist_ok=True)
