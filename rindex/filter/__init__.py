@@ -1,4 +1,4 @@
-from .filter import Filter
+from .base import Filter
 from typing import List
 
 

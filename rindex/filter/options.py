@@ -1,18 +1,4 @@
-from abc import abstractmethod
-from .filter import Filter, PathConfig, PurePath
-
-class OptionFilter(Filter):
-    @abstractmethod
-    def load_path_config(self, opt: dict, output: PathConfig) -> None:
-        pass
-
-    @abstractmethod
-    def calc_relative_config(self, cfg: PathConfig, rel_path: PurePath, output: PathConfig) -> None:
-        pass
-    
-    @abstractmethod
-    def make_default_config(self, cfg: PathConfig) -> None:
-        pass
+from .base import OptionFilter, PathConfig, PurePath
 
 class StandaloneFilter(OptionFilter):
     OPTION_NAME = 'standalone'

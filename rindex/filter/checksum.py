@@ -1,4 +1,4 @@
-from .metadata import MetadataFilter
+from .base import MetadataFilter
 
 class HashlibFilter(MetadataFilter):
     def __init__(self, hash_type) -> None:
