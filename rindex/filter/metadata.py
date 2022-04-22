@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from .filter import Filter
 
 
@@ -35,7 +36,22 @@ class MetadataFilter(Filter):
     def export_to_index(self, entry, cfg, output):
         if cfg[self.OPTION_NAME] and (v := entry.get(self.METADATA_NAME, None)) is not None:
             output[self.METADATA_NAME] = v
+    
+    @abstractmethod
+    def make_default_config(self, cfg):
+        raise NotImplementedError
 
+    @abstractmethod
+    def file_changed(self, cache, cur_stat):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def put_index(self, cache, file_changed, cfg, output):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def parse_content(self, output):
+        raise NotImplementedError
 
 from datetime import datetime
 
