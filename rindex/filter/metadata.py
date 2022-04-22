@@ -8,11 +8,7 @@ class ModtimeFilter(MetadataFilter):
     METADATA_TYPE = datetime
 
     def load_path_config(self, opt, output):
-        val = opt.get(self.OPTION_NAME, False)
-        assert isinstance(val, bool), f'Option {self.OPTION_NAME} should be a bool.'
-        output[self.OPTION_NAME] = val
-        if self.OPTION_NAME in opt:
-            del opt[self.OPTION_NAME]
+        super().load_path_config(opt, output)
         if self.TIMEZONE_NAME in opt:
             val = opt[self.TIMEZONE_NAME]
             del opt[self.TIMEZONE_NAME]
