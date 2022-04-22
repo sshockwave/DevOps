@@ -27,11 +27,6 @@ class PathConfig(dict):
     ignore: bool = False
 
     r"""
-    Metadata options
-    """
-    timezone: tzinfo
-
-    r"""
     If standalone, the index file is separated.
     standalone = 1: index file of the current file / folder is separated
     standalone > 1: All files within this depth should be individually indexed
@@ -79,13 +74,6 @@ class PathConfig(dict):
                         val = 1
                     assert isinstance(val, int)
                     self.standalone = val
-                case 'timezone':
-                    assert isinstance(val, str)
-                    self.timezone = val
-                case 'save_mtime':
-                    pass
-                case _:
-                    assert False, f'Unrecognized option: {key}'
 
 class FileEntry(TypedDict, total=False):
     # Keys starting with '_' means that it will not appear in the final index
