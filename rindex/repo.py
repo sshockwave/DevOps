@@ -71,12 +71,6 @@ class RepoConfig:
         return self.calc_rel_cfg(parent_node.val, path.relative_to(parent_path))
 
 
-def is_empty(path: Path):
-    from os import scandir
-    with scandir(path) as it:
-        return not any(it)
-
-
 class Repository:
     INDEX_FILENAME = 'index.toml'
     CONFIG_FILENAME = 'rindex.toml'
@@ -108,24 +102,12 @@ class Repository:
         return None, path
 
     def open_folder(self, rel_path: PurePath) -> bool:
-        return any(f.open_folder(self, rel_path) for f in self.filters)
+        cfg = self.config[rel_path]
+        return any(f.open_folder(self, rel_path, cfg) for f in self.filters)
 
     def close_folder(self, rel_path: PurePath):
-        val: DirEntry = self.dir_cache[rel_path]
-        val['_ref_count'] -= 1
-        if val['_ref_count'] > 0:
-            self.dir_cache[rel_path] = val
-            return
-        if '_exported' not in val:
-            self.export_folder_index(rel_path, allow_unused=True)
-        abs_path = self.repo_root / rel_path
-        if '_exported' not in self.dir_cache[rel_path]:
-            (abs_path / self.INDEX_FILENAME).unlink(missing_ok=True)
-        if abs_path.exists() and abs_path.is_dir() and is_empty(abs_path):
-            abs_path.rmdir()
-        del self.dir_cache[rel_path]
-        if rel_path.parent != rel_path:
-            self.close_folder(rel_path.parent)
+        cfg = self.config[rel_path]
+        return any(f.close_folder(self, rel_path, cfg) for f in self.filters)
 
     def export_folder_index(self, rel_path: PurePath, allow_unused: bool):
         if self.config[rel_path]['standalone'] == 0:

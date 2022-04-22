@@ -52,13 +52,13 @@ class Filter:
     def parse_content(self, output: FileEntry) -> Generator[None, bytes, None]:
         pass
 
-    def open_folder(self, repo: 'Filter', rel_path: PurePath) -> bool:
+    def open_folder(self, repo: 'Filter', rel_path: PurePath, cfg: PathConfig) -> bool:
         r"""
         Return whether the folder is handled by this filter
         """
         return False
     
-    def close_folder(self, repo: 'Filter', rel_path: PurePath) -> bool:
+    def close_folder(self, repo: 'Filter', rel_path: PurePath, cfg: PathConfig) -> bool:
         r"""
         Return whether the folder is handled by this filter
         """
