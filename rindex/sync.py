@@ -85,10 +85,21 @@ class SyncWorker:
         for f in self.repo.filters:
             f.export_to_fscache(v, new_v)
         self.fscache[get_cache_key(a)] = json.dumps(new_v)
+    
+    def handle_file(self, info: DirEntry | Path, dest: PurePath):
+        self.repo.open_file(dest)
+        fsentry = stat_to_internal(
+            info,
+            self.repo.filters,
+            self.repo.config[dest],
+            self.read_cache(info),
+        )
+        self.write_cache(info, fsentry)
+        self.repo.set_file_entry(dest, fsentry)
 
     def sync(self, file_path: Path, dest: PurePath):
         if file_path.is_file():
-            self.repo.set_file_entry(dest, stat_to_internal(file_path))
+            self.handle_file(file_path, dest)
             return
         assert file_path.is_dir(), f'Path "{file_path}" is neither file nor directory.'
         from os import scandir
@@ -97,15 +108,7 @@ class SyncWorker:
             for entry in it:
                 repo_path = dest / entry.name
                 if entry.is_file():
-                    self.repo.open_file(repo_path)
-                    fsentry = stat_to_internal(
-                        entry,
-                        self.repo.filters,
-                        self.repo.config[repo_path],
-                        self.read_cache(entry),
-                    )
-                    self.write_cache(entry, fsentry)
-                    self.repo.set_file_entry(repo_path, fsentry)
+                    self.handle_file(entry, repo_path)
                     self.pbar.update()
                 elif entry.is_dir():
                     self.repo.open_folder(repo_path)
