@@ -24,6 +24,7 @@ PREFIX="${HOME}/miniconda3"
 sh miniconda.sh -b -p "${PREFIX}" # Install in silent mode
 source ${PREFIX}/bin/activate # Activate conda in the current shell
 conda init # Modify the bash init scripts to activate conda on startup
+conda config --set auto_stack 1 # Stack base so that the common utilities are available
 ```
 
 Useful mirrors:
