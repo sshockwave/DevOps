@@ -134,3 +134,8 @@ use_proxy=yes
 http_proxy=172.23.96.1:20809
 https_proxy=172.23.96.1:20809
 ```
+### go
+See https://goproxy.io/zh/.
+```bash
+export GOPROXY=https://proxy.golang.com.cn,direct
+```
