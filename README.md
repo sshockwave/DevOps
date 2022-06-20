@@ -45,6 +45,13 @@ timezone="Africa/Abidjan"
 # All available checksums:
 # crc32, md5, sha1, sha256, sha512
 save_sha256=true
+# Representers decide how the data would be stored in the repo.
+# default:
+data.metadata=true
+# Here we list all the available options
+# but in practice,
+# at most one representer can be chosen for each folder.
+data.copy=false # Copy the file to the repo instead of using the metadata
 ```
 
 ## Contributions
