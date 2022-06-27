@@ -1,0 +1,15 @@
+{% set version = "33.0.1" %}
+
+package:
+  name: platform-tools
+  version: {{ version }}
+build:
+  script:
+    - wget https://dl.google.com/android/repository/platform-tools_r{{ version }}-linux.zip
+requirements:
+  build:
+    - wget
+  run:
+    - libcxx
+    - sqlite
+

@@ -1,0 +1,22 @@
+{% set version = "1.14.0" %}
+
+package:
+  name: f2fs-tools
+  version: {{ version }}
+source:
+  git_rev: v{{ version }}
+  git_url: https://git.kernel.org/pub/scm/linux/kernel/git/jaegeuk/f2fs-tools.git
+build:
+  number: 0
+requirements:
+  build:
+    - pkg-config
+    - autoconf
+    - libtool
+    - {{ compiler('c') }}
+  host:
+    - libuuid
+    - libselinux1 # not existing
+  run:
+    - libuuid
+    - libselinux1
