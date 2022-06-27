@@ -12,6 +12,7 @@ runs:
       with:
         miniforge-version: latest
     - name: Install dependency
+      shell: bash -l {0}
       run: |
         conda install anaconda-client
     - uses: actions/download-artifact@v3
@@ -21,4 +22,4 @@ runs:
     - name: Publish to Anaconda
       shell: bash -l {0}
       run: |
-        anaconda --token "${{ inputs.anaconda-token }}" upload --force ./**
+        anaconda --token "${{ inputs.anaconda-token }}" upload --force ./**.tar.bz2
