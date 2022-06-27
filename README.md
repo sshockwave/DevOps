@@ -90,26 +90,45 @@ option.add_argument('--disable-blink-features=AutomationControlled')
 driver = webdriver.Chrome(options=option)
 ```
 ### WSL
-## Proxy Settings
-[GitHub language highlight file](https://github.com/github/linguist/blob/master/lib/linguist/languages.yml)
-### apt
-Proxy setting:
+## Network Settings
+### Mirrors and Proxies
+For the highlighting of these config files,
+see [the list of GitHub Highlight Languages](https://github.com/github/linguist/blob/master/lib/linguist/languages.yml).
+
+<details>
+<summary>apt</summary>
+
 ```
 Acquire::http::proxy "http://127.0.0.1:10809/";
 Acquire::https::proxy "https://127.0.0.1:10809/";
 ```
-### wget
+
+</details>
+
+<details>
+<summary>wget</summary>
+
 ```wgetrc
 use_proxy=yes
 http_proxy=172.23.96.1:20809
 https_proxy=172.23.96.1:20809
 ```
-### go
+
+</details>
+
+<details>
+<summary>go</summary>
+
 See https://goproxy.io/zh/.
 ```bash
 export GOPROXY=https://proxy.golang.com.cn,direct
 ```
-### conda
+
+</details>
+
+<details>
+<summary>conda</summary>
+
 See https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/.
 ```yaml
 channels:
@@ -131,3 +150,5 @@ proxy_servers:
     http: http://user:pass@corp.com:8080
     https: https://user:pass@corp.com:8080
 ```
+
+</details>
