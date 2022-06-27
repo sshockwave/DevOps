@@ -1,40 +1,48 @@
-// 20200212
 function saveResToFile(url, name) {
 	let btn = document.createElement('a');
 	btn.download = name || '';
 	btn.href = url;
 	btn.click();
 }
-function isGoodURL(url){
-	url = new URL(url,window.location.href);
-	return url.protocol==='data:';
+async function sleep(duration){
+	return new Promise((res)=>setTimeout(res,duration));
 }
-async function work(){
+async function work(a=0,b=100000){
 	let cur=Array.from(document.querySelectorAll('div[index]'));
-	let nxt=[];
-	while(cur.length>0){
-		for(let div of cur){
-			const id=Number.parseInt(div.getAttribute('index'));
-			const node = div.querySelector('img');
-			if(!isGoodURL(node.src)){
-				await new Promise((res)=>{
-					node.onload = ()=>{
-						if(isGoodURL(node.src)){
+	for(let div of cur){
+		const id=Number.parseInt(div.getAttribute('index'));
+		if(id<a||id>b)continue;
+		const node = div.querySelector('img');
+		function check(){
+			url = new URL(node.src,window.location.href);
+			if(url.protocol!=='data:')return false;
+			if(node.naturalHeight<1000)return false;
+			return true;
+		}
+		if(check()){
+			node.scrollIntoView();
+		}else{
+			await sleep(Math.floor(Math.random()*5000));
+			while(true){
+				let isTimeout=true;
+				await Promise.any([
+					new Promise((res)=>{
+						node.onload = ()=>{
+							isTimeout=false;
 							res();
-						}
-					};
-					setTimeout(res,3000);
-					node.scrollIntoView();
-				});
-			}
-			if(isGoodURL(node.src)){
-				saveResToFile(node.src,`${id}.jpg`);
-				await new Promise((res)=>setTimeout(res,3000));
-			}else{
-				nxt.push(div);
+						};
+						node.scrollIntoView();
+					}),
+					sleep(7000),
+				]);
+				if(check())break;
+				if(isTimeout){
+					window.scrollTo(0,0);
+					await sleep(1000);
+				}
 			}
 		}
-		cur=nxt,nxt=[];
+		saveResToFile(node.src,`${id.toString().padStart(4, '0')}.jpg`);
 	}
 	console.log('download finished');
 }
