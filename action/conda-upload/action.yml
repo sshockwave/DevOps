@@ -22,4 +22,4 @@ runs:
     - name: Publish to Anaconda
       shell: bash -l {0}
       run: |
-        anaconda --token "${{ inputs.anaconda-token }}" upload --force ./**.tar.bz2
+        anaconda --token "${{ inputs.anaconda-token }}" upload --force ./*.tar.bz2
