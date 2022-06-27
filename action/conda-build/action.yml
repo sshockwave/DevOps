@@ -13,18 +13,16 @@ runs:
   steps:
     - name: Setup Miniconda
       uses: conda-incubator/setup-miniconda@v2
-    - name: Install Dependencies
-      shell: bash -l {0}
-      run: |
-        conda install mamba -c conda-forge
-        mamba install conda-verify boa anaconda-client -c conda-forge
+      with:
+        miniforge-version: latest
     - name: Build Package
       shell: bash -l {0}
       id: build
       run: |
-        conda mambabuild "${{ inputs.recipe-dir }}" -c sshockwave -c conda-forge
+        conda build "${{ inputs.recipe-dir }}" -c sshockwave
     - name: Publish to Anaconda
       shell: bash -l {0}
       if: inputs.anaconda-token
       run: |
+        conda install anaconda-client
         anaconda --token "${{ inputs.anaconda-token }}" upload --force "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2

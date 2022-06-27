@@ -1,0 +1,23 @@
+name: bindfs
+on:
+  push:
+    paths:
+      - action/conda-build/**
+      - recipe/bindfs/**
+      - .github/workflows/bindfs.yml
+  pull_request:
+    paths:
+      - action/conda-build/**
+      - recipe/bindfs/**
+      - .github/workflows/bindfs.yml
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./action/conda-build
+        with:
+          recipe-dir: recipe/bindfs
+          anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
