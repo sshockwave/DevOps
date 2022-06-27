@@ -24,6 +24,7 @@ PREFIX="${HOME}/miniconda3"
 sh miniconda.sh -b -p "${PREFIX}" # Install in silent mode
 source ${PREFIX}/bin/activate # Activate conda in the current shell
 conda init # Modify the bash init scripts to activate conda on startup
+conda config --set auto_stack 1 # Stack base so that the common utilities are available
 ```
 
 Useful mirrors:
@@ -94,6 +95,31 @@ option.add_experimental_option('useAutomationExtension', False)
 option.add_argument('--disable-blink-features=AutomationControlled')
 driver = webdriver.Chrome(options=option)
 ```
+### WSL
+To mount another disk on WSL startup, add `/etc/wsl.conf`: 
+```ini
+[boot]
+command="bash /etc/bootup.sh"
+```
+and create `/etc/bootup.sh`(or anywhere you like):
+```bash
+#!/bin/bash
+# Needed to enable WSL interop in startup script
+# See https://github.com/microsoft/wsl/issues/8056
+for socket in /run/WSL/*; do
+   if [ "$socket" == "/run/WSL/1_interop" ]
+   then continue
+   fi
+   if ss -elx | grep -q "$socket"; then
+      export WSL_INTEROP=$socket
+   fi
+done
+# Mount physical disk
+# --vhd option is enabled in WSL from Microsoft Store
+# See https://docs.microsoft.com/en-us/windows/wsl/wsl2-mount-disk#mount-a-vhd-in-wsl
+WSL_INTEROP=/run/WSL/10_interop /mnt/c/Windows/system32/wsl.exe --mount --vhd "C:\\Users\\sshockwave\\Softwares\\Linux\\home.vhdx" --bare
+mount /dev/sdd /home
+```
 ## Proxy Settings
 [GitHub language highlight file](https://github.com/github/linguist/blob/master/lib/linguist/languages.yml)
 ### apt
@@ -107,4 +133,9 @@ Acquire::https::proxy "https://127.0.0.1:10809/";
 use_proxy=yes
 http_proxy=172.23.96.1:20809
 https_proxy=172.23.96.1:20809
+```
+### go
+See https://goproxy.io/zh/.
+```bash
+export GOPROXY=https://proxy.golang.com.cn,direct
 ```
