@@ -21,6 +21,7 @@ runs:
       run: |
         conda install conda-build
         conda build "${{ inputs.recipe-dir }}" -c sshockwave
+        mkdir -p -f ./artifact
         cp "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2 ./artifact
     - uses: actions/upload-artifact@v3
       with:
