@@ -1,9 +1,16 @@
 from pathlib import Path
-from playwright.sync_api import sync_playwright, Page
+from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
+import requests
+from tqdm import tqdm
 
+ua = UserAgent()
+headers = {
+    'User-Agent': ua.chrome
+}
 proxies = {
    'http': 'http://192.168.208.1:7890',
+   'https': 'http://192.168.208.1:7890',
 }
 
 def only(arr):
@@ -16,33 +23,47 @@ def filter_eol(it):
 def unwrap_text(soup):
     from bs4 import NavigableString
     assert isinstance(soup, NavigableString)
-    return soup.get_text()
+    return soup.get_text().strip()
+
+def unwrap_innertext(soup):
+    return unwrap_text(only(soup.contents))
 
 def write_text(path: Path, text):
     path.parent.mkdir(exist_ok=True, parents=True)
     with open(path, 'w') as f:
         f.write(text)
 
+def migrate_children(a, b):
+    for el in a.children:
+        b.append(el.extract())
+
 class SyosetuNovel:
-    def __init__(self, url, page: Page) -> None:
+    @staticmethod
+    def req(url):
+        return requests.get(url, headers=headers, proxies=proxies)
+
+    def __init__(self, url) -> None:
         import re
-        url_match = re.match(r'https://ncode.syosetu.com/(\w*)/?', url)
+        url_match = re.match(r'https://(?:\w*).syosetu.com/(\w*)/?', url)
         assert url_match
         self.id = url_match.group(1)
-        self.page = page
-        page.goto(url)
-
-
-        t = page.locator('a.more')
-        if t.count() > 0:
-            t.click()
-        self.intro = page.locator('#novel_ex').inner_html()
-
-        self.title = page.locator('p.novel_title').inner_text()
-        author_el = page.locator('div.novel_writername a')
-        self.author = author_el.inner_text()
-        self.author_link = author_el.get_attribute('href')
-        toc_soup = BeautifulSoup(page.locator('div.index_box').inner_html(), 'html.parser')
+        self.url = url
+        page = self.req(url).text
+        page = BeautifulSoup(page, 'html.parser')
+        self.intro = only(page.find_all(id='novel_ex')).decode_contents()
+        self.title = unwrap_text(only(only(page.find_all('p', class_='novel_title')).contents))
+        writer_div = only(page.find_all('div', class_='novel_writername'))
+        writer_links = writer_div.find_all('a')
+        if len(writer_links) != 0:
+            author_el = only(writer_links)
+            self.author = unwrap_text(only(author_el.contents))
+            self.author_link = author_el.attrs['href']
+        else:
+            author_str = unwrap_innertext(writer_div)
+            assert author_str.startswith('作者：')
+            self.author = author_str[len('作者：'):]
+            self.author_link = '#'
+        toc_soup = only(page.find_all('div', class_='index_box'))
         self.toc = []
         chapter_cnt = 0
         for el in filter_eol(toc_soup.children):
@@ -59,10 +80,14 @@ class SyosetuNovel:
                 assert dt.attrs == {'class': ['long_update']}
                 href, = filter_eol(dd.children)
                 url_match = re.match(f'^/{self.id}/(\d+)/$', href.attrs['href'])
+                content_id = url_match.group(1)
                 assert url_match
+                from urllib.parse import urljoin
                 info = {
                     'name': unwrap_text(only(href.contents)),
-                    'path': f'./chapter{chapter_cnt:03}/{url_match.group(1)}',
+                    'id': content_id,
+                    'url': urljoin(url, href.attrs['href']),
+                    'path': f'./chapter{chapter_cnt:03}/{content_id}.md',
                 }
                 dt = list(filter_eol(dt.children))
                 assert len(dt) in [1, 2]
@@ -80,10 +105,13 @@ class SyosetuNovel:
     def get_save_path(self):
         return f'./syosetu/{self.id}'
 
-    def gen_title_markdown(self):
-        return f'* [{self.title}]({self.get_save_path()})({self.author})'
+    def get_toc(self):
+        return self.toc
 
-    def gen_readme_markdown(self):
+    def gen_title_markdown(self):
+        return f'* [{self.title}]({self.get_save_path()}) ({self.author})'
+
+    def gen_readme(self):
         soup = BeautifulSoup()
 
         title = soup.new_tag('h1')
@@ -113,6 +141,8 @@ class SyosetuNovel:
                 soup.append(title)
             elif isinstance(v, dict):
                 dt = soup.new_tag('dt')
+                if dl is None:
+                    dl = soup.new_tag('dl')
                 dl.append(dt)
                 href = soup.new_tag('a', attrs={'href': v['path']})
                 dt.append(href)
@@ -131,6 +161,39 @@ class SyosetuNovel:
         if dl is not None:
             soup.append(dl)
         return soup.prettify()
+    
+    def gen_content(self, toc_item):
+        page = self.req(toc_item['url']).text
+        page = BeautifulSoup(page, 'html.parser')
+        soup = BeautifulSoup()
+
+        title = soup.new_tag('h1')
+        soup.append(title)
+        title.string = unwrap_innertext(only(page.find_all('p', class_='novel_subtitle')))
+        assert title.string == toc_item['name']
+
+        novel_p = page.find_all('div', id='novel_p')
+        if len(novel_p) != 0:
+            novel_p = only(novel_p)
+            header = soup.new_tag('header')
+            soup.append(header)
+            soup.append(soup.new_tag('hr'))
+            migrate_children(novel_p, header)
+
+        honbun = only(page.find_all('div', id='novel_honbun'))
+        content = soup.new_tag('section')
+        soup.append(content)
+        migrate_children(honbun, content)
+
+        novel_a = page.find_all('div', id='novel_a')
+        if len(novel_a) != 0:
+            novel_a = only(novel_a)
+            footer = soup.new_tag('footer')
+            soup.append(soup.new_tag('hr'))
+            soup.append(footer)
+            migrate_children(novel_a, footer)
+
+        return soup.prettify()
 
 def main():
     from argparse import ArgumentParser
@@ -140,21 +203,41 @@ def main():
     repo_dir = args.repo_dir[0]
     print(f'Repo: {repo_dir}')
     with open(repo_dir / 'target_urls.txt', 'r') as f:
-        target_urls = {l.strip() for l in f.readlines()}
-    with sync_playwright() as p:
-        browser = p.chromium.launch(proxy={
-            "server": proxies['http'],
-        })
-        readme = '# Web Novels\n'
-        page = browser.new_page()
-        for url in target_urls:
-            novel = SyosetuNovel(url, page)
-            readme += novel.gen_title_markdown() + '\n'
-            write_text(repo_dir / novel.get_save_path() / 'README.md', novel.gen_readme_markdown())
-        page.close()
-        browser.close()
-        with open(repo_dir / 'README.md', 'w') as f:
-            f.write(readme)
+        target_urls = [l.strip() for l in f.readlines()]
+    readme = '# Web Novels\n'
+    for url in tqdm(target_urls):
+        novel = SyosetuNovel(url)
+        readme += novel.gen_title_markdown() + '\n'
+        novel_path = repo_dir / novel.get_save_path()
+        write_text(novel_path / 'README.md', novel.gen_readme())
+        toc_path = novel_path / 'toc.json'
+        if toc_path.exists():
+            with open(toc_path, 'r') as f:
+                import json
+                old_toc = json.load(f)
+        else:
+            old_toc = []
+        old_toc_map = {v['id']: v for v in old_toc if not isinstance(v, str)}
+        new_toc = novel.get_toc()
+        new_toc_map = {v['id']: v for v in new_toc if not isinstance(v, str)}
+        for v in old_toc:
+            if isinstance(v, str):
+                continue
+            if v['id'] not in new_toc_map:
+                (novel_path / v['path']).unlink(missing_ok=True)
+        for v in tqdm(new_toc, desc=novel.id):
+            if isinstance(v, str):
+                continue
+            t = old_toc_map.get(v['id'])
+            if t is None or t != v:
+                if t is not None:
+                    (novel_path / t['path']).unlink(missing_ok=True)
+                write_text(novel_path / v['path'], novel.gen_content(v))
+        with open(toc_path, 'w') as f:
+            import json
+            json.dump(new_toc, f, indent=2)
+    with open(repo_dir / 'README.md', 'w') as f:
+        f.write(readme)
 
 if __name__ == '__main__':
     main()
