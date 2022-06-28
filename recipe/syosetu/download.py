@@ -81,7 +81,7 @@ class SyosetuNovel:
         return f'./syosetu/{self.id}'
 
     def gen_title_markdown(self):
-        return f'* [{self.title}]({self.get_save_path()}) - [{self.author}]({self.author_link})'
+        return f'* [{self.title}]({self.get_save_path()})({self.author})'
 
     def gen_readme_markdown(self):
         soup = BeautifulSoup()
