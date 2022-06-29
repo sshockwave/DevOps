@@ -327,7 +327,7 @@ class KakuyomuNovel(BaseNovel):
                 assert url_match
                 content_id = url_match.group(1)
                 self.toc.append({
-                    'name': unwrap_innertext(time_el),
+                    'name': unwrap_innertext(title_el),
                     'id': content_id,
                     'url': urljoin(url, el.attrs['href']),
                     'updated_on': time_el.attrs['datetime'],
@@ -353,25 +353,25 @@ class KakuyomuNovel(BaseNovel):
         blockq.string = self.catchpharse
         blockq.attrs['style'] = self.catchphrase_style
 
-        soup.append('作者：')
+        soup.append('【　作者　】')
         author = soup.new_tag('a', attrs={'href': self.author_link})
         author.string = self.author
         soup.append(author)
         soup.append(soup.new_tag('br'))
 
-        soup.append('ジャンル：')
+        soup.append('【ジャンル】')
         genre = soup.new_tag('a', attrs={'href': self.genre_link})
         genre.string = self.genre
         soup.append(genre)
         soup.append(soup.new_tag('br'))
 
         if self.atten_list:
-            soup.append('⚠️' + ' / '.join(self.atten_list))
+            soup.append('【　注意　】' + ' / '.join(self.atten_list))
             soup.append(soup.new_tag('br'))
 
         if self.tag_list:
             first = True
-            soup.append('タグ：')
+            soup.append('【　タグ　】')
             for t in self.tag_list:
                 if first:
                     first = False
@@ -384,7 +384,7 @@ class KakuyomuNovel(BaseNovel):
 
         soup.append(details := soup.new_tag('details'))
         details.append(summary := soup.new_tag('summary'))
-        summary.string = '紹介'
+        summary.string = '【紹介】'
         migrate_children(self.intro, details)
 
         dl = None
