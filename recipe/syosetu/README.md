@@ -1,6 +1,6 @@
 ## Installation
 
 ```bash
-conda install playwright -c microsoft -c conda-forge
-playwright install chromium
+conda install tidy-html5
+pip install -r requirements.txt
 ```

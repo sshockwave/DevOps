@@ -2,3 +2,4 @@ beautifulsoup4
 tqdm
 requests
 fake-useragent
+pytidylib
