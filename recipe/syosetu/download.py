@@ -168,11 +168,10 @@ class SyosetuNovel(BaseNovel):
         title.string = self.title
         soup.append(title)
 
-        soup.append(meta := soup.new_tag('small'))
-        meta.append(soup.new_string('【　作者　】'))
+        soup.append(soup.new_string('【作者】'))
         author = soup.new_tag('a', attrs={'href': self.author_link})
         author.string = self.author
-        meta.append(author)
+        soup.append(author)
 
         details = soup.new_tag('details')
         summary = soup.new_tag('summary')
@@ -354,36 +353,34 @@ class KakuyomuNovel(BaseNovel):
         blockq.string = self.catchpharse
         blockq.attrs['style'] = self.catchphrase_style
 
-        soup.append(meta := soup.new_tag('small'))
-
-        meta.append('【　作者　】')
+        soup.append('【　作者　】')
         author = soup.new_tag('a', attrs={'href': self.author_link})
         author.string = self.author
-        meta.append(author)
-        meta.append(soup.new_tag('br'))
+        soup.append(author)
+        soup.append(soup.new_tag('br'))
 
-        meta.append('【ジャンル】')
+        soup.append('【ジャンル】')
         genre = soup.new_tag('a', attrs={'href': self.genre_link})
         genre.string = self.genre
-        meta.append(genre)
-        meta.append(soup.new_tag('br'))
+        soup.append(genre)
+        soup.append(soup.new_tag('br'))
 
         if self.atten_list:
-            meta.append('【注意事項】' + ' / '.join(self.atten_list))
-            meta.append(soup.new_tag('br'))
+            soup.append('【注意事項】' + ' / '.join(self.atten_list))
+            soup.append(soup.new_tag('br'))
 
         if self.tag_list:
             first = True
-            meta.append('【　タグ　】')
+            soup.append('【　タグ　】')
             for t in self.tag_list:
                 if first:
                     first = False
                 else:
-                    meta.append(' / ')
+                    soup.append(' / ')
                 tag_href = soup.new_tag('a', attrs={'href': t['url']})
-                meta.append(tag_href)
+                soup.append(tag_href)
                 tag_href.string = t['name']
-            meta.append(soup.new_tag('br'))
+            soup.append(soup.new_tag('br'))
 
         soup.append(details := soup.new_tag('details'))
         details.append(summary := soup.new_tag('summary'))
