@@ -10,7 +10,6 @@ on:
       - action/**
       - recipe/bindfs/**
       - .github/workflows/bindfs.yml
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 jobs:
   build:
@@ -20,6 +19,11 @@ jobs:
       - uses: ./action/conda-build
         with:
           recipe-dir: recipe/bindfs
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    steps:
       - uses: ./action/conda-upload
         with:
           anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
