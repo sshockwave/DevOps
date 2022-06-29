@@ -34,13 +34,14 @@ def write_text(path: Path, text):
         f.write(text)
 
 def migrate_children(a, b):
-    for el in a.children:
-        b.append(el.extract())
+    for el in a.contents:
+        from copy import copy
+        b.append(copy(el))
 
 class SyosetuNovel:
     @staticmethod
     def req(url):
-        return requests.get(url, headers=headers, proxies=proxies)
+        return requests.get(url, headers=headers, proxies=proxies, cookies={'over18': 'yes'})
 
     def __init__(self, url) -> None:
         import re
@@ -103,7 +104,7 @@ class SyosetuNovel:
                 self.toc.append(info)
 
     def get_save_path(self):
-        return f'./syosetu/{self.id}'
+        return f'./syosetu/{self.id}/README.md'
 
     def get_toc(self):
         return self.toc
@@ -160,7 +161,7 @@ class SyosetuNovel:
                 assert False
         if dl is not None:
             soup.append(dl)
-        return soup.prettify()
+        return str(soup)
     
     def gen_content(self, toc_item):
         page = self.req(toc_item['url']).text
@@ -193,7 +194,7 @@ class SyosetuNovel:
             soup.append(footer)
             migrate_children(novel_a, footer)
 
-        return soup.prettify()
+        return str(soup)
 
 def main():
     from argparse import ArgumentParser
