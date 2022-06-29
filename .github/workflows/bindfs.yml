@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 jobs:
   conda:
-    uses: .github/workflows/reuse-conda.yml@main
+    uses: ./.github/workflows/reuse-conda.yml@main
     with:
       recipe_name: bindfs
     secrets:
