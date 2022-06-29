@@ -2,28 +2,15 @@ name: bindfs
 on:
   push:
     paths:
-      - action/**
       - recipe/bindfs/**
-      - .github/workflows/bindfs.yml
   pull_request:
     paths:
-      - action/**
       - recipe/bindfs/**
-      - .github/workflows/bindfs.yml
   workflow_dispatch:
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./action/conda-build
-        with:
-          recipe-dir: recipe/bindfs
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ./action/conda-upload
-        with:
-          anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
+  conda:
+    uses: .github/workflows/reuse-conda.yml
+    with:
+      recipe_name: bindfs
+    secrets:
+      anaconda_token: ${{ secrets.ANACONDA_TOKEN }}

@@ -1,0 +1,50 @@
+name: Build and Publish Conda Package
+on:
+  workflow_call:
+    inputs:
+      recipe_name:
+        required: true
+        type: string
+    secrets:
+      anaconda_token:
+        required: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-version: latest
+      - name: Build Package
+        shell: bash -l {0}
+        id: build
+        run: |
+          conda install conda-build
+          conda build ./recipe/"${{ inputs.recipe_name }}" -c sshockwave
+          mkdir -p ./artifact
+          cp "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2 ./artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./artifact
+  deploy:
+    if: secrets.anaconda_token != ''
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-version: latest
+      - name: Install dependency
+        shell: bash -l {0}
+        run: |
+          conda install anaconda-client
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: ./
+      - name: Publish to Anaconda
+        shell: bash -l {0}
+        run: |
+          anaconda --token "${{ inputs.anaconda-token }}" upload --force ./*.tar.bz2
