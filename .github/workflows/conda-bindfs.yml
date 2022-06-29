@@ -1,0 +1,17 @@
+name: bindfs
+on:
+  push:
+    paths:
+      - recipe/conda/bindfs/**
+  pull_request:
+    paths:
+      - recipe/conda/bindfs/**
+  workflow_dispatch:
+jobs:
+  conda:
+    uses: ./.github/workflows/reuse-conda.yml
+    with:
+      recipe_name: bindfs
+      do_deploy: ${{ github.event_name != 'pull_request' }}
+    secrets:
+      anaconda_token: ${{ secrets.ANACONDA_TOKEN }}

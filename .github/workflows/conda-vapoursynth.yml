@@ -1,0 +1,17 @@
+name: vapoursynth
+on:
+  push:
+    paths:
+      - recipe/conda/vapoursynth/**
+  pull_request:
+    paths:
+      - recipe/conda/vapoursynth/**
+  workflow_dispatch:
+jobs:
+  conda:
+    uses: ./.github/workflows/reuse-conda.yml
+    with:
+      recipe_name: vapoursynth
+      do_deploy: ${{ github.event_name != 'pull_request' }}
+    secrets:
+      anaconda_token: ${{ secrets.ANACONDA_TOKEN }}

@@ -1,0 +1,17 @@
+name: gocryptfs
+on:
+  push:
+    paths:
+      - recipe/conda/gocryptfs/**
+  pull_request:
+    paths:
+      - recipe/conda/gocryptfs/**
+  workflow_dispatch:
+jobs:
+  conda:
+    uses: ./.github/workflows/reuse-conda.yml
+    with:
+      recipe_name: gocryptfs
+      do_deploy: ${{ github.event_name != 'pull_request' }}
+    secrets:
+      anaconda_token: ${{ secrets.ANACONDA_TOKEN }}
