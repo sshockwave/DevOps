@@ -75,7 +75,7 @@ class BaseNovel(metaclass=ABCMeta):
         pass
 
     def gen_title_markdown(self):
-        return f'* [{self.title}]({self.get_save_path()}/README.md) ({self.author})'
+        return f'[{self.title}]({self.get_save_path()}/README.md)【{self.author}】'
 
     @abstractmethod
     def gen_readme(self):
@@ -439,13 +439,13 @@ def main():
     args = parser.parse_args()
     repo_dir = args.repo_dir[0]
     print(f'Repo: {repo_dir}')
-    with open(repo_dir / 'target_urls.txt', 'r') as f:
-        target_urls = [l.strip() for l in f.readlines()]
-    readme = '# Web Novels\n'
-    for url in tqdm(target_urls):
+    with open(repo_dir / 'source.md', 'r') as f:
+        readme = BeautifulSoup(f, 'html.parser')
+    for anchor in tqdm(readme.find_all('a', class_='download')):
+        url = unwrap_innertext(anchor)
         NovelClass = only([c for c in novel_types if c.match(url)])
         novel = NovelClass(url)
-        readme += novel.gen_title_markdown() + '\n'
+        anchor.replace_with(novel.gen_title_markdown())
         novel_path = repo_dir / novel.get_save_path()
         write_html(novel_path / 'README.md', novel.gen_readme())
         toc_path = novel_path / 'toc.json'
@@ -474,7 +474,7 @@ def main():
         with open(toc_path, 'w') as f:
             import json
             json.dump(new_toc, f, indent=2)
-    write_text(repo_dir / 'README.md', readme)
+    write_text(repo_dir / 'README.md', str(readme))
 
 if __name__ == '__main__':
     main()
