@@ -1,3 +1,5 @@
+import re
+from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
@@ -14,8 +16,13 @@ proxies = {
 }
 
 def only(arr):
-    assert len(arr) == 1
-    return arr[0]
+    el = None
+    for a in arr:
+        assert el is None
+        el = a
+        break
+    assert el is not None
+    return el
 
 def filter_eol(it):
     return filter(lambda x: x != '\n', it)
@@ -38,15 +45,44 @@ def migrate_children(a, b):
         from copy import copy
         b.append(copy(el))
 
-class SyosetuNovel:
+class BaseNovel(metaclass=ABCMeta):
+    @classmethod
+    @abstractmethod
+    def match(url):
+        pass
+
+    @abstractmethod
+    def get_save_path(self):
+        pass
+
+    @abstractmethod
+    def get_toc(self):
+        pass
+
+    @abstractmethod
+    def gen_title_markdown(self):
+        pass
+
+    @abstractmethod
+    def gen_readme(self):
+        pass
+
+    @abstractmethod
+    def gen_content(self, toc_item):
+        pass
+
+class SyosetuNovel(BaseNovel):
     @staticmethod
     def req(url):
         return requests.get(url, headers=headers, proxies=proxies, cookies={'over18': 'yes'})
 
+    url_prog = re.compile(r'https://(?:\w*).syosetu.com/(\w*)/?')
+    @classmethod
+    def match(cls, url):
+        return cls.url_prog.match(url)
+
     def __init__(self, url) -> None:
-        import re
-        url_match = re.match(r'https://(?:\w*).syosetu.com/(\w*)/?', url)
-        assert url_match
+        url_match = self.match(url)
         self.id = url_match.group(1)
         self.url = url
         page = self.req(url).text
@@ -72,7 +108,10 @@ class SyosetuNovel:
             assert isinstance(el, Tag)
             if el.name == 'div':
                 assert el.attrs == {'class': ['chapter_title']}
-                self.toc.append(unwrap_text(only(el.contents)))
+                self.toc.append({
+                    'no_store': True,
+                    'name': unwrap_text(only(el.contents))
+                })
                 chapter_cnt += 1
             elif el.name == 'dl':
                 assert el.attrs == {'class': ['novel_sublist2']}
@@ -104,13 +143,13 @@ class SyosetuNovel:
                 self.toc.append(info)
 
     def get_save_path(self):
-        return f'./syosetu/{self.id}/README.md'
+        return f'./syosetu/{self.id}'
 
     def get_toc(self):
         return self.toc
 
     def gen_title_markdown(self):
-        return f'* [{self.title}]({self.get_save_path()}) ({self.author})'
+        return f'* [{self.title}]({self.get_save_path()}/README.md) ({self.author})'
 
     def gen_readme(self):
         soup = BeautifulSoup()
@@ -133,14 +172,14 @@ class SyosetuNovel:
 
         dl = None
         for v in self.toc:
-            if isinstance(v, str):
+            if v.get('no_store'):
                 if dl is not None:
                     soup.append(dl)
                 dl = soup.new_tag('dl')
                 title = soup.new_tag('h2')
-                title.string = v
+                title.string = v['name']
                 soup.append(title)
-            elif isinstance(v, dict):
+            else:
                 dt = soup.new_tag('dt')
                 if dl is None:
                     dl = soup.new_tag('dl')
@@ -150,15 +189,9 @@ class SyosetuNovel:
                 href.string = v['name']
                 dd = soup.new_tag('dd')
                 dl.append(dd)
-                span1 = soup.new_tag('span')
-                dd.append(span1)
-                span1.string = v['created_on']
+                dd.append(soup.new_string(v['created_on']))
                 if 'updated_on' in v:
-                    span2 = soup.new_tag('span', attrs={'title': v['updated_on']})
-                    span2.string = '（改）'
-                    dd.append(span2)
-            else:
-                assert False
+                    dd.append(soup.new_string(f'（{v["updated_on"]}）'))
         if dl is not None:
             soup.append(dl)
         return str(soup)
@@ -196,6 +229,10 @@ class SyosetuNovel:
 
         return str(soup)
 
+novel_types = [
+    SyosetuNovel,
+]
+
 def main():
     from argparse import ArgumentParser
     parser = ArgumentParser()
@@ -207,7 +244,8 @@ def main():
         target_urls = [l.strip() for l in f.readlines()]
     readme = '# Web Novels\n'
     for url in tqdm(target_urls):
-        novel = SyosetuNovel(url)
+        NovelClass = only([c for c in novel_types if c.match(url)])
+        novel = NovelClass(url)
         readme += novel.gen_title_markdown() + '\n'
         novel_path = repo_dir / novel.get_save_path()
         write_text(novel_path / 'README.md', novel.gen_readme())
@@ -218,16 +256,16 @@ def main():
                 old_toc = json.load(f)
         else:
             old_toc = []
-        old_toc_map = {v['id']: v for v in old_toc if not isinstance(v, str)}
+        old_toc_map = {v['id']: v for v in old_toc if isinstance(v, dict) and not v.get('no_store')}
         new_toc = novel.get_toc()
-        new_toc_map = {v['id']: v for v in new_toc if not isinstance(v, str)}
+        new_toc_map = {v['id']: v for v in new_toc if not v.get('no_store')}
         for v in old_toc:
-            if isinstance(v, str):
+            if not isinstance(v, dict) or v.get('no_store'):
                 continue
             if v['id'] not in new_toc_map:
                 (novel_path / v['path']).unlink(missing_ok=True)
         for v in tqdm(new_toc, desc=novel.id):
-            if isinstance(v, str):
+            if v.get('no_store'):
                 continue
             t = old_toc_map.get(v['id'])
             if t is None or t != v:
