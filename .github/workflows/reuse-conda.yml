@@ -16,11 +16,16 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-version: latest
+          miniforge-variant: Mambaforge
+      - name: Install Dependencies
+        shell: bash -l {0}
+        run: |
+          mamba install conda-verify boa
+      - uses: actions/checkout@v2
       - name: Build Package
         shell: bash -l {0}
         run: |
-          conda install conda-build
-          conda build ./recipe/"${{ inputs.recipe_name }}" -c sshockwave
+          conda mambabuild ./recipe/"${{ inputs.recipe_name }}" -c sshockwave
           mkdir -p ./artifact
           cp "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2 ./artifact
       - uses: actions/upload-artifact@v3
@@ -43,10 +48,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-version: latest
+          miniforge-variant: Mambaforge
       - name: Install dependency
         shell: bash -l {0}
         run: |
-          conda install anaconda-client
+          mamba install anaconda-client
       - uses: actions/download-artifact@v3
         with:
           name: artifact
