@@ -13,4 +13,4 @@ jobs:
     with:
       recipe_name: bindfs
     secrets:
-      anaconda_token: ${{ secrets.ANACONDA_TOKEN }}
+      anaconda_token: ${{ github.event_name != 'pull_request' && secrets.ANACONDA_TOKEN || '' }}
