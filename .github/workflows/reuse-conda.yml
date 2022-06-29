@@ -34,17 +34,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           path: ./artifact
-      # https://github.com/actions/runner/issues/520
-      - name: Before Deploy
-        shell: bash -l {0}
-        run: |
-          if [[ "${{ secrets.anaconda_token }}" != "" ]]
-          then
-            echo "::set-output name=do_deploy::true"
-          fi
   deploy:
     needs: [ build ]
-    if: inputs.do_deploy
+    if: needs.build.outputs.do_deploy == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Setup Miniconda
@@ -63,4 +55,4 @@ jobs:
       - name: Publish to Anaconda
         shell: bash -l {0}
         run: |
-          anaconda --token "${{ secrets.anaconda-token }}" upload --force ./*.tar.bz2
+          anaconda --token "${{ secrets.anaconda_token }}" upload --force ./*.tar.bz2
