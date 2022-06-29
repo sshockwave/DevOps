@@ -5,6 +5,9 @@ on:
       recipe_name:
         required: true
         type: string
+      do_deploy:
+        required: false
+        type: boolean
     secrets:
       anaconda_token:
         required: false
@@ -41,7 +44,7 @@ jobs:
           fi
   deploy:
     needs: [ build ]
-    if: needs.build.outputs.do_deploy == 'true'
+    if: inputs.do_deploy
     runs-on: ubuntu-latest
     steps:
       - name: Setup Miniconda
