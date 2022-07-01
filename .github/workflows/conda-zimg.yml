@@ -2,10 +2,10 @@ name: zimg
 on:
   push:
     paths:
-      - recipe/conda/zimg/**
+      - conda/zimg/**
   pull_request:
     paths:
-      - recipe/conda/zimg/**
+      - conda/zimg/**
   workflow_dispatch:
 jobs:
   conda:

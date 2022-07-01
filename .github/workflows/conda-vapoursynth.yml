@@ -2,10 +2,10 @@ name: vapoursynth
 on:
   push:
     paths:
-      - recipe/conda/vapoursynth/**
+      - conda/vapoursynth/**
   pull_request:
     paths:
-      - recipe/conda/vapoursynth/**
+      - conda/vapoursynth/**
   workflow_dispatch:
 jobs:
   conda:

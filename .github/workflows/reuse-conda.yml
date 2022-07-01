@@ -28,7 +28,7 @@ jobs:
       - name: Build Package
         shell: bash -l {0}
         run: |
-          conda mambabuild ./recipe/conda/"${{ inputs.recipe_name }}" -c sshockwave
+          conda mambabuild ./conda/"${{ inputs.recipe_name }}" -c sshockwave
           mkdir -p ./artifact
           cp "$CONDA_PREFIX"/conda-bld/*/*.tar.bz2 ./artifact
       - uses: actions/upload-artifact@v3

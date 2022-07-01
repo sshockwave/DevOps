@@ -2,10 +2,10 @@ name: gocryptfs
 on:
   push:
     paths:
-      - recipe/conda/gocryptfs/**
+      - conda/gocryptfs/**
   pull_request:
     paths:
-      - recipe/conda/gocryptfs/**
+      - conda/gocryptfs/**
   workflow_dispatch:
 jobs:
   conda:

@@ -2,10 +2,10 @@ name: bindfs
 on:
   push:
     paths:
-      - recipe/conda/bindfs/**
+      - conda/bindfs/**
   pull_request:
     paths:
-      - recipe/conda/bindfs/**
+      - conda/bindfs/**
   workflow_dispatch:
 jobs:
   conda:

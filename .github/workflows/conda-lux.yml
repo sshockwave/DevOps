@@ -2,10 +2,10 @@ name: lux
 on:
   push:
     paths:
-      - recipe/conda/lux/**
+      - conda/lux/**
   pull_request:
     paths:
-      - recipe/conda/lux/**
+      - conda/lux/**
   workflow_dispatch:
 jobs:
   conda:
