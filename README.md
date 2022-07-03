@@ -152,3 +152,13 @@ proxy_servers:
 ```
 
 </details>
+
+<details>
+<summary>git</summary>
+
+```gitconfig
+[http]
+        proxy = http://172.22.240.1:7890
+```
+
+</details>
