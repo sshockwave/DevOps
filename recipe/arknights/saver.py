@@ -11,6 +11,19 @@ def img_save_worker(queue):
             path.parent.mkdir(exist_ok=True, parents=True)
             if path.suffix == '.webp':
                 img.save(path, lossless=True, quality=100, method=6)
+            elif path.suffix == '.jxl':
+                png_path = path.with_suffix('.png')
+                img.save(png_path)
+                import subprocess
+                ret = subprocess.run([
+                    'cjxl',
+                    png_path.as_posix(),
+                    path.as_posix(),
+                    '-q', '100',
+                    '-e', '9',
+                ], stderr=subprocess.DEVNULL)
+                assert ret.returncode == 0
+                png_path.unlink()
             else:
                 img.save(path)
 
@@ -34,7 +47,7 @@ class Saver:
         return self.save_path / name
 
     def save_lossless(self, img, name):
-        self.queue.put((img, self.get_save_path(name).with_suffix('.webp')))
+        self.queue.put((img, self.get_save_path(name).with_suffix('.jxl')))
 
     def close(self):
         for _ in self.pool:
