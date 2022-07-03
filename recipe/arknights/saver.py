@@ -66,8 +66,8 @@ class Saver:
     def save_lossless(self, img, name):
         self.queue.put((img, self.get_save_path(Path(name).with_suffix('.jxl'))))
 
-    def open(self, name):
-        return open(self.get_save_path(name))
+    def open(self, name, *args, **kwargs):
+        return open(self.get_save_path(name), *args, **kwargs)
 
     def close(self):
         for _ in self.pool:
