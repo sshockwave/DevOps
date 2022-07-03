@@ -67,7 +67,9 @@ class Saver:
         self.queue.put((img, self.get_save_path(Path(name).with_suffix('.jxl'))))
 
     def open(self, name, *args, **kwargs):
-        return open(self.get_save_path(name), *args, **kwargs)
+        path = self.get_save_path(name)
+        path.parent.mkdir(exist_ok=True, parents=True)
+        return open(path, *args, **kwargs)
 
     def close(self):
         for _ in self.pool:
