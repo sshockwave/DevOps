@@ -1,0 +1,24 @@
+{% set version = "v0.6.1" %}
+
+package:
+  name: libjxl
+  version: {{ version }}
+build:
+  number: 0
+  script_env:
+   - JXL_VER={{ version }}
+requirements:
+  build:
+    - pkg-config
+    - cmake
+    - {{ compiler('cxx') }}
+  host:
+    - libbrotlienc
+    - gflags
+    # optional image codec libraries
+    - giflib
+    - libjpeg-turbo
+    - openexr
+    - libpng
+    - libwebp
+  run:
