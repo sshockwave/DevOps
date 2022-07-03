@@ -13,12 +13,10 @@ ua = UserAgent()
 headers = {
     'User-Agent': ua.chrome
 }
-r"""
 proxies = {
-   'http': 'http://192.168.208.1:7890',
-   'https': 'http://192.168.208.1:7890',
+   #'http': 'http://192.168.208.1:7890',
+   #'https': 'http://192.168.208.1:7890',
 }
-"""
 
 def only(arr):
     el = None
