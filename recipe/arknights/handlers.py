@@ -9,15 +9,19 @@ def save_path(name):
     name = name.removeprefix(container_prefix)
     return Path('/mnt/c/Users/sshockwave/Downloads/output') / name
 
+def save_lossless(img, path):
+    from pathlib import Path
+    path = Path(path)
+    path.parent.mkdir(exist_ok=True, parents=True)
+    img.save(path.with_suffix('webp'), lossless=True, quality=100, method=6)
+
 def flip(img):
     from PIL import Image
     return img.transpose(Image.FLIP_TOP_BOTTOM)
 
 def handle_poster(name, obj):
-    save_loc = save_path(name).with_suffix('.png')
-    save_loc.parent.mkdir(exist_ok=True, parents=True)
     from decoder import decode_sprite
-    flip(decode_sprite(obj)).save(save_loc)
+    save_lossless(flip(decode_sprite(obj)), save_path(name))
 
 def handle_avg_char(name, obj):
     data = obj.read()
@@ -38,12 +42,11 @@ def handle_avg_char(name, obj):
         for v in g:
             if v['facePos']['x'] < 0 or v['image'].size == base['image'].size:
                 assert v['image'].width >= 1024
-                flip(v['image']).save(save_loc / f'face{v["suffix"]}.png')
+                save_lossless(flip(v['image']), save_loc / f'face{v["suffix"]}.png')
             else:
                 assert v['image'].width <= 400
                 delta_name = f'delta/data{v["suffix"]}.png'
-                (save_loc / 'delta').mkdir(parents=True, exist_ok=True)
-                flip(v['image']).save(save_loc / delta_name)
+                save_lossless(flip(v['image']), save_loc / delta_name)
                 with open(save_loc / f'face{v["suffix"]}.svg', 'w') as f:
                     f.write(f'''<?xml version="1.0" standalone="no"?>
 <svg viewBox="0 0 {base['image'].width} {base['image'].height}"
@@ -97,7 +100,7 @@ def handle_avg_char(name, obj):
                 if flag: break
         assert flag
         if not flag:
-            flip(decode_sprite(image_sprite, search_alpha=True)).save(save_loc / 'image.png')
+            save_lossless(flip(decode_sprite(image_sprite, search_alpha=True)), save_loc / 'image.png')
     else:
         assert hub.type == 'AVGCharacterSpriteHub'
 
@@ -114,8 +117,7 @@ def handle_illust2(name, obj):
     image = decode_image(image)
     save_loc = save_path(name).with_suffix('.png')
     save_loc = save_loc.parent.parent / save_loc.name
-    save_loc.parent.mkdir(exist_ok=True, parents=True)
-    flip(image).save(save_loc)
+    save_lossless(flip(image), save_loc)
 
 def handle_text(name, obj):
     assert obj.type == 'TextAsset'
