@@ -1,4 +1,4 @@
-{% set version = "v0.6.1" %}
+{% set version = "0.6.1" %}
 
 package:
   name: libjxl
@@ -6,7 +6,7 @@ package:
 build:
   number: 0
   script_env:
-   - JXL_VER={{ version }}
+   - JXL_VER=v{{ version }}
 requirements:
   build:
     - pkg-config
