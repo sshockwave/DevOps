@@ -129,7 +129,8 @@ export GOPROXY=https://proxy.golang.com.cn,direct
 <details>
 <summary>conda</summary>
 
-See https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/.
+There are available mirrors.
+See https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/ for more details.
 ```yaml
 channels:
   - defaults
@@ -146,6 +147,10 @@ custom_channels:
   pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
   pytorch-lts: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
   simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+```
+
+Proxies:
+```yaml
 proxy_servers:
     http: http://user:pass@corp.com:8080
     https: https://user:pass@corp.com:8080
@@ -159,6 +164,26 @@ proxy_servers:
 ```gitconfig
 [http]
         proxy = http://172.22.240.1:7890
+```
+
+</details>
+
+<details>
+<summary>pip / PyPI</summary>
+
+Temporary mirror:
+```bash
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple <some-package>
+```
+
+Persistent mirror:
+```bash
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+Proxy:
+```bash
+pip install <some-package> --proxy scheme://[user:passwd@]proxy.server:port
 ```
 
 </details>
