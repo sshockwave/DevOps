@@ -13,8 +13,23 @@ def img_save_worker(queue):
                 img.save(path, lossless=True, quality=100, method=6)
             elif path.suffix == '.jxl':
                 png_path = path.with_suffix('.png')
-                img.save(png_path)
                 import subprocess
+                if path.exists():
+                    ret = subprocess.run([
+                        'djxl',
+                        path.as_posix(),
+                        png_path.as_posix(),
+                    ], stderr=subprocess.DEVNULL)
+                    assert ret.returncode == 0
+                    from PIL import Image
+                    exists = False
+                    with Image.open(png_path) as img2:
+                        from decoder import same_image
+                        exists = same_image(img, img2)
+                    png_path.unlink()
+                    if exists:
+                        continue
+                img.save(png_path)
                 ret = subprocess.run([
                     'cjxl',
                     png_path.as_posix(),
