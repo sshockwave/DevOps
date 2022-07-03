@@ -13,7 +13,7 @@ def save_lossless(img, path):
     from pathlib import Path
     path = Path(path)
     path.parent.mkdir(exist_ok=True, parents=True)
-    img.save(path.with_suffix('webp'), lossless=True, quality=100, method=6)
+    img.save(path.with_suffix('.webp'), lossless=True, quality=100, method=6)
 
 def flip(img):
     from PIL import Image
