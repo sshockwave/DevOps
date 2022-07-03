@@ -49,10 +49,14 @@ def register_handlers(h: NamedHandler):
 
 def main():
     from extractor import ArknightsExtractor
+    import handlers
+    from saver import Saver
+    handlers.saver = Saver()
     worker = ArknightsExtractor()
     h = NamedHandler(worker.full_asset_list)
     register_handlers(h)
     worker.extract(h.callbacks)
+    handlers.saver.close()
 
 if __name__=='__main__':
     main()

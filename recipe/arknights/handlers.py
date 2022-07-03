@@ -2,6 +2,8 @@ r"""
 Handle containers
 """
 
+saver = None
+
 def save_path(name):
     from pathlib import Path
     container_prefix = 'assets/torappu/dynamicassets/'
@@ -10,10 +12,7 @@ def save_path(name):
     return Path('/mnt/c/Users/sshockwave/Downloads/output') / name
 
 def save_lossless(img, path):
-    from pathlib import Path
-    path = Path(path)
-    path.parent.mkdir(exist_ok=True, parents=True)
-    img.save(path.with_suffix('.webp'), lossless=True, quality=100, method=6)
+    saver.save_lossless(img, path)
 
 def flip(img):
     from PIL import Image
