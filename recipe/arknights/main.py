@@ -51,7 +51,7 @@ def main():
     from extractor import ArknightsExtractor
     import handlers
     from saver import Saver
-    handlers.saver = Saver()
+    handlers.saver = Saver(save_path='/mnt/c/Users/sshockwave/Downloads/output', num_threads=6)
     worker = ArknightsExtractor()
     h = NamedHandler(worker.full_asset_list)
     register_handlers(h)

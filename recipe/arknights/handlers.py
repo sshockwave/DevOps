@@ -1,15 +1,9 @@
 r"""
 Handle containers
 """
+from pathlib import Path
 
 saver = None
-
-def save_path(name):
-    from pathlib import Path
-    container_prefix = 'assets/torappu/dynamicassets/'
-    assert name.startswith(container_prefix)
-    name = name.removeprefix(container_prefix)
-    return Path('/mnt/c/Users/sshockwave/Downloads/output') / name
 
 def save_lossless(img, path):
     saver.save_lossless(img, path)
@@ -20,7 +14,7 @@ def flip(img):
 
 def handle_poster(name, obj):
     from decoder import decode_sprite
-    save_lossless(flip(decode_sprite(obj)), save_path(name))
+    save_lossless(flip(decode_sprite(obj)), name)
 
 def handle_avg_char(name, obj):
     data = obj.read()
@@ -33,8 +27,7 @@ def handle_avg_char(name, obj):
     info = decode_avg_char_sprite(hub)
     from decoder import get_image_sprite
     image_sprite = get_image_sprite(image)
-    save_loc = save_path(name).with_suffix('')
-    save_loc.mkdir(exist_ok=True, parents=True)
+    save_loc = Path(name).with_suffix('')
     for g in info:
         base = g[-1]
         base_name = f'face{base["suffix"]}.png'
@@ -114,14 +107,12 @@ def handle_illust2(name, obj):
     # Hack since this should be an inconsistency of the asset
     from decoder import decode_image
     image = decode_image(image)
-    save_loc = save_path(name).with_suffix('.png')
-    save_loc = save_loc.parent.parent / save_loc.name
-    save_lossless(flip(image), save_loc)
+    save_lossless(flip(image), name)
 
 def handle_text(name, obj):
     assert obj.type == 'TextAsset'
     data = obj.read()
-    save_loc = save_path(name)
+    save_loc = saver.get_save_path(name)
     assert save_loc.suffix == '.txt' or save_loc.suffix == '.json'
     save_loc.parent.mkdir(exist_ok=True, parents=True)
     with open(save_loc, 'w', encoding='UTF-8') as f:
