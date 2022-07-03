@@ -1,0 +1,17 @@
+name: libjxl
+on:
+  push:
+    paths:
+      - conda/libjxl/**
+  pull_request:
+    paths:
+      - conda/libjxl/**
+  workflow_dispatch:
+jobs:
+  conda:
+    uses: ./.github/workflows/reuse-conda.yml
+    with:
+      recipe_name: libjxl
+      do_deploy: ${{ github.event_name != 'pull_request' }}
+    secrets:
+      anaconda_token: ${{ secrets.ANACONDA_TOKEN }}
