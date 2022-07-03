@@ -37,6 +37,7 @@ class Saver:
         self.pool = [Thread(target=img_save_worker, args=(self.queue,)) for _ in range(self.num_workers)]
         for t in self.pool:
             t.start()
+        self.updated_file_list = []
 
     def get_save_path(self, name):
         container_prefix = 'assets/torappu/dynamicassets/'
@@ -44,10 +45,14 @@ class Saver:
             name = name.as_posix()
         assert name.startswith(container_prefix)
         name = name.removeprefix(container_prefix)
+        self.updated_file_list.append(name)
         return self.save_path / name
 
     def save_lossless(self, img, name):
         self.queue.put((img, self.get_save_path(name).with_suffix('.jxl')))
+
+    def open(self, name):
+        return open(self.get_save_path(name))
 
     def close(self):
         for _ in self.pool:

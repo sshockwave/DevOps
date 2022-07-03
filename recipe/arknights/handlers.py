@@ -39,7 +39,7 @@ def handle_avg_char(name, obj):
                 assert v['image'].width <= 400
                 delta_name = f'delta/data{v["suffix"]}.png'
                 save_lossless(flip(v['image']), save_loc / delta_name)
-                with open(save_loc / f'face{v["suffix"]}.svg', 'w') as f:
+                with saver.open(save_loc / f'face{v["suffix"]}.svg', 'w') as f:
                     f.write(f'''<?xml version="1.0" standalone="no"?>
 <svg viewBox="0 0 {base['image'].width} {base['image'].height}"
     xmlns="http://www.w3.org/2000/svg"
@@ -112,8 +112,7 @@ def handle_illust2(name, obj):
 def handle_text(name, obj):
     assert obj.type == 'TextAsset'
     data = obj.read()
-    save_loc = saver.get_save_path(name)
+    save_loc = Path(name)
     assert save_loc.suffix == '.txt' or save_loc.suffix == '.json'
-    save_loc.parent.mkdir(exist_ok=True, parents=True)
-    with open(save_loc, 'w', encoding='UTF-8') as f:
+    with saver.open(name, 'w', encoding='UTF-8') as f:
         f.write(data.script)
