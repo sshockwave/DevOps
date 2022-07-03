@@ -75,7 +75,7 @@ class BaseNovel(metaclass=ABCMeta):
         pass
 
     def gen_title_markdown(self):
-        return f'[{self.title}]({self.get_save_path()}/README.md)【{self.author}】'
+        return f'【{self.author}】[{self.title}]({self.get_save_path()}/README.md)'
 
     @abstractmethod
     def gen_readme(self):
