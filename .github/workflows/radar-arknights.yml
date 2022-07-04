@@ -1,0 +1,71 @@
+name: Update Arknights Contents
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      GH_DEPLOY:
+        required: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Config JSON
+        shell: bash
+        run: |
+          git clone \
+            --depth 1  \
+            --filter=blob:none \
+            --filter=tree:0 \
+            --sparse \
+            https://${{ secrets.GH_DEPLOY }}@github.com/sshockwave/data-arknights \
+            arknights
+          cd arknights
+          git sparse-checkout set hot_update_list.json
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/DevOps'
+          path: devops
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          pip install requests
+      - name: Check for Updates
+        shell: bash
+        run: |
+          if python devops/radar/arknights/main.py -n -o ./arknights -j 1
+          then
+            echo ::set-output name=need_update::true
+          fi
+  update:
+    needs: [check]
+    if: ${{ needs.check.outputs.need_update == 'true' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/data-arknights'
+          path: arknights
+          token: ${{ secrets.GH_DEPLOY }}
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/DevOps'
+          path: devops
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          pip install requests
+      - name: Update Contents
+        shell: bash
+        run: |
+          python devops/radar/arknights/main.py -o ./arknights -j 1
+      - name: Push to Remote
+        shell: bash
+        run: |
+          git config --global user.name "Action Bot"
+          git config --global user.email "action@github.com"
+          version=$(python devops/radar/arknights/get_version.py -o ./arknights)
+          cd arknights/
+          git add -A
+          if git commit -m "Update version $version"
+          then
+            git push
+          fi
