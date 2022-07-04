@@ -64,7 +64,7 @@ jobs:
       - name: Install Dependencies
         shell: bash -l {0}
         run: |
-          mamba install libjxl -c sshockwave -c conda-forge
+          mamba install "python>=3.9" libjxl -c sshockwave -c conda-forge
           cd unitypack
           pip install .
           cd ..
