@@ -1,0 +1,37 @@
+name: Update Syosetu Contents
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/data-novel'
+          path: novel
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/DevOps'
+          path: devops
+      - name: Install Dependencies
+        shell: bash -l {0}
+        run: |
+          cd devops/radar/syosetu/
+          sudo apt install tidy
+          pip install -r requirements.txt
+      - name: Download Contents
+        shell: bash -l {0}
+        run: |
+          python devops/radar/syosetu/download.py ./novel
+      - name: Push to Remote
+        shell: bash -l {0}
+        run: |
+          git config --global user.name "Action Bot"
+          git config --global user.email "action@github.com"
+          cd novel/
+          git add -A
+          if git commit -m "Update content"
+          then
+            git push
+          fi

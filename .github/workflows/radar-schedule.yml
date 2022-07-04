@@ -1,0 +1,8 @@
+name: Scheduler
+on:
+  schedule:
+    - cron: '0 0 * * *' # Every day
+jobs:
+  update:
+    uses: ./.github/workflows/radar-schedule.yml
+    secrets: inherit
