@@ -76,3 +76,9 @@ class Saver:
             self.queue.put('exit')
         for t in self.pool:
             t.join()
+
+    def __enter__(self):
+        pass
+    
+    def __exit__(self, type, value, trace):
+        self.close()

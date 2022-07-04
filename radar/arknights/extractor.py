@@ -9,9 +9,8 @@ def resolve_deps(nodes, graph):
     return list(vis)
 
 class ArknightsExtractor:
-    def __init__(self) -> None:
-        from ak_api import ArknightsApi
-        self.api = ArknightsApi()
+    def __init__(self, api) -> None:
+        self.api = api
         from unity_utils import get_ab_containers
         with self.api.open_ab('torappu.ab') as f:
             c = get_ab_containers(f)
