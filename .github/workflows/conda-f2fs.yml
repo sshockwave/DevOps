@@ -1,0 +1,16 @@
+name: Build f2fs-tools
+on:
+  push:
+    paths:
+      - conda/f2fs-tools/**
+  pull_request:
+    paths:
+      - conda/f2fs-tools/**
+  workflow_dispatch:
+jobs:
+  conda:
+    uses: ./.github/workflows/reuse-conda.yml
+    with:
+      recipe_name: f2fs-tools
+    secrets:
+      anaconda_token: ${{ secrets.ANACONDA_TOKEN }}

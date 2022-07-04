@@ -16,7 +16,7 @@ requirements:
     - {{ compiler('c') }}
   host:
     - libuuid
-    - libselinux1 # not existing
+    - libselinux-devel-cos6-x86_64
   run:
     - libuuid
     - libselinux1
