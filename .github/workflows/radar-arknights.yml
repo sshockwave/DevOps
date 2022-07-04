@@ -32,7 +32,7 @@ jobs:
         id: check
         shell: bash
         run: |
-          if python devops/radar/arknights/main.py -n -o ./arknights -j 1
+          if python devops/radar/arknights/main.py -n -o ./arknights
           then
             echo ::set-output name=need_update::true
           fi
@@ -73,7 +73,7 @@ jobs:
       - name: Update Contents
         shell: bash -l {0}
         run: |
-          python devops/radar/arknights/main.py -o ./arknights -j 1
+          python devops/radar/arknights/main.py -o ./arknights
       - name: Push to Remote
         shell: bash -l {0}
         run: |

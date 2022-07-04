@@ -67,7 +67,8 @@ def need_update(repo_path: Path, api):
 def main():
     from argparse import ArgumentParser
     parser = ArgumentParser(prog='arknights')
-    parser.add_argument('-j', '--threads', type=int, default=6)
+    import os
+    parser.add_argument('-j', '--threads', type=int, default=len(os.sched_getaffinity(0)))
     parser.add_argument(
         '-o',
         '--output',
@@ -91,6 +92,7 @@ def main():
         with open(args.output / 'hot_update_list.json', 'w') as f:
             import json
             json.dump(api.hot_update_list, f)
+        print(f'[INFO] Using {args.threads} threads')
         worker = ArknightsExtractor(api)
         h = NamedHandler(worker.full_asset_list)
         register_handlers(h)
