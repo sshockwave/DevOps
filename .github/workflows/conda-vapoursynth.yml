@@ -12,6 +12,5 @@ jobs:
     uses: ./.github/workflows/reuse-conda.yml
     with:
       recipe_name: vapoursynth
-      do_deploy: ${{ github.event_name != 'pull_request' }}
     secrets:
       anaconda_token: ${{ secrets.ANACONDA_TOKEN }}

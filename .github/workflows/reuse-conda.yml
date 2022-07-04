@@ -5,9 +5,6 @@ on:
       recipe_name:
         required: true
         type: string
-      do_deploy:
-        required: false
-        type: boolean
     secrets:
       anaconda_token:
         required: false
@@ -34,9 +31,20 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           path: ./artifact
+      # https://github.com/actions/runner/issues/520
+      - name: Before Deploy
+        shell: bash -l {0}
+        id: check_deploy
+        run: |
+          if [[ "${{ secrets.anaconda_token }}" != "" ]]
+          then
+            echo "::set-output name=do_deploy::true"
+          fi
+    outputs:
+      do_deploy: ${{ steps.check_deploy.outputs.do_deploy }}
   deploy:
     needs: [ build ]
-    if: inputs.do_deploy
+    if: needs.build.outputs.do_deploy == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Setup Miniconda

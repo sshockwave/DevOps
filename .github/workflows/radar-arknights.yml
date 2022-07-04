@@ -29,12 +29,15 @@ jobs:
         run: |
           pip install requests
       - name: Check for Updates
+        id: check
         shell: bash
         run: |
           if python devops/radar/arknights/main.py -n -o ./arknights -j 1
           then
             echo ::set-output name=need_update::true
           fi
+    outputs:
+      need_update: ${{ steps.check.outputs.need_update }}
   update:
     needs: [check]
     runs-on: ubuntu-latest
