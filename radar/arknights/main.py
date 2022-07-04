@@ -52,13 +52,17 @@ def register_handlers(h: NamedHandler):
 def need_update(repo_path: Path, api):
     hot_path = repo_path / 'hot_update_list.json'
     if not hot_path.exists():
+        print('Path does not exists, need update.')
         return True
     with open(hot_path, 'r') as f:
         import json
         data = json.load(f)
     ver_key = 'versionId'
     data2 = api.hot_update_list
-    return data[ver_key] != data2[ver_key]
+    if data[ver_key] != data2[ver_key]:
+        print('Version does not match, need update.')
+        return True
+    return False
 
 def main():
     from argparse import ArgumentParser
