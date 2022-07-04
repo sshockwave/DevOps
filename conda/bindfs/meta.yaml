@@ -1,4 +1,4 @@
-{% set version = "1.15.1" %}
+{% set version = "1.16.1" %}
 
 package:
   name: bindfs
@@ -7,7 +7,7 @@ source:
   git_rev: {{ version }}
   git_url: https://github.com/mpartel/bindfs
 build:
-  number: 1
+  number: 0
 requirements:
   build:
     - automake
