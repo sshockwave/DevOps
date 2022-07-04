@@ -9,7 +9,9 @@ def img_save_worker(queue):
             path: Path
             img, path = target
             path.parent.mkdir(exist_ok=True, parents=True)
-            if path.suffix == '.webp':
+            if path.suffix == '.png':
+                img.save(path, optimize=True)
+            elif path.suffix == '.webp':
                 img.save(path, lossless=True, quality=100, method=6)
             elif path.suffix == '.jxl':
                 png_path = path.with_suffix('.png')
@@ -63,8 +65,10 @@ class Saver:
         self.updated_file_list.append(name)
         return self.save_path / name
 
-    def save_lossless(self, img, name):
-        self.queue.put((img, self.get_save_path(Path(name).with_suffix('.jxl'))))
+    def save_lossless(self, img, name, preserve_suffix=False):
+        if not preserve_suffix:
+            name = Path(name).with_suffix('.jxl')
+        self.queue.put((img, self.get_save_path(name)))
 
     def open(self, name, *args, **kwargs):
         path = self.get_save_path(name)

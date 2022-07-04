@@ -29,11 +29,9 @@ def create_tree():
     return defaultdict(create_tree)
 
 def insert_tree(tree, name, val):
-    names = name.split('/')
     cur = tree
-    for t in names[:-1]:
+    for t in name.split('/'):
         cur = cur[t]
-    cur[names[-1]] = val
 
 def register_handlers(h: NamedHandler):
     from handlers import handle_illust2
@@ -47,6 +45,8 @@ def register_handlers(h: NamedHandler):
     h.register_regex('avg/characters/(?:(?!empty).)*$', handle_avg_char)
     from handlers import handle_text
     h.register_regex('/gamedata/story/', handle_text)
+    from handlers import handle_dynchar
+    h.register_regex('arts/dynchars/', handle_dynchar)
     # TODO
 
 def need_update(repo_path: Path, api):
@@ -89,6 +89,7 @@ def main():
                 exit(0)
             else:
                 exit(1)
+        args.output.mkdir(exist_ok=True, parents=True)
         with open(args.output / 'hot_update_list.json', 'w') as f:
             import json
             json.dump(api.hot_update_list, f)

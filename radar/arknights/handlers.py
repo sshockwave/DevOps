@@ -116,3 +116,45 @@ def handle_text(name, obj):
     assert save_loc.suffix == '.txt' or save_loc.suffix == '.json'
     with saver.open(name, 'w', encoding='UTF-8') as f:
         f.write(data.script)
+
+def handle_dynchar(name, obj):
+    name = Path(name)
+    assert obj.type == 'GameObject'
+    obj = [t['component'].object for t in obj.read().component]
+    assert [
+        'Transform',
+        'MeshFilter',
+        'MeshRenderer',
+        'SkeletonAnimation',
+        'DynIllust',
+    ] == [v.type for v in obj]
+    dynillust = obj[4].read()
+    skel_ani = dynillust['_skeleton'].object
+    assert skel_ani.type == 'SkeletonAnimation'
+    skel_ani = skel_ani.read()['skeletonDataAsset'].object
+    assert skel_ani.type == 'SkeletonDataAsset'
+    skel_ani = skel_ani.read()
+    skel_json = skel_ani['skeletonJSON'].object
+    assert skel_json.type == 'TextAsset'
+    skel_json = skel_json.read()
+    with saver.open(name.with_name(skel_json.name), 'wb') as f:
+        f.write(skel_json.script)
+    atlas, = skel_ani['atlasAssets']
+    atlas = atlas.object
+    assert atlas.type == 'SpineAtlasAsset'
+    atlas = atlas.read()
+    atlas_file = atlas['atlasFile'].object
+    assert atlas_file.type == 'TextAsset'
+    atlas_file = atlas_file.read()
+    with saver.open(name.with_name(atlas_file.name), 'w') as f:
+        f.write(atlas_file.script)
+    materials = atlas['materials']
+    for v in materials:
+        atlas_mat = v.object
+        from decoder import decode_material
+        img = decode_material(atlas_mat)
+        tex = atlas_mat.read().saved_properties['m_TexEnvs']['_MainTex']['m_Texture'].object
+        assert tex.type == 'Texture2D'
+        img_path = name.with_name(tex.read().name).with_suffix('.png')
+        # This is referenced from .atlas file so filename cannot be changed
+        saver.save_lossless(flip(img), img_path, preserve_suffix=True)
