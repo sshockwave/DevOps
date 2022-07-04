@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: '0 0 * * *' # Every day
 jobs:
-  update:
-    uses: ./.github/workflows/radar-schedule.yml
+  update-syosetu:
+    name: Syosetu
+    uses: ./.github/workflows/radar-syosetu.yml
+    secrets: inherit
+  update-arknights:
+    name: Arknights
+    uses: ./.github/workflows/radar-arknights.yml
     secrets: inherit
