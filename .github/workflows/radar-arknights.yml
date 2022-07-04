@@ -52,9 +52,16 @@ jobs:
         with:
           repository: 'sshockwave/DevOps'
           path: devops
+      - uses: actions/checkout@v3
+        with:
+          repository: 'HearthSim/UnityPack'
+          path: unitypack
       - name: Install Dependencies
         shell: bash
         run: |
+          cd unitypack
+          pip install .
+          cd ..
           cd devops/radar/arknights
           pip install -r requirements.txt
       - name: Update Contents
