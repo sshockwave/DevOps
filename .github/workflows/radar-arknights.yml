@@ -38,6 +38,7 @@ jobs:
           fi
   update:
     needs: [check]
+    runs-on: ubuntu-latest
     if: ${{ needs.check.outputs.need_update == 'true' }}
     steps:
       - uses: actions/checkout@v3
