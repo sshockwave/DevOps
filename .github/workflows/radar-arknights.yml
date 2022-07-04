@@ -62,20 +62,20 @@ jobs:
           repository: 'HearthSim/UnityPack'
           path: unitypack
       - name: Install Dependencies
-        shell: bash
+        shell: bash -l {0}
         run: |
-          mamba install python libjxl -c sshockwave -c conda-forge
+          mamba install libjxl -c sshockwave -c conda-forge
           cd unitypack
           pip install .
           cd ..
           cd devops/radar/arknights
           pip install -r requirements.txt
       - name: Update Contents
-        shell: bash
+        shell: bash -l {0}
         run: |
           python devops/radar/arknights/main.py -o ./arknights -j 1
       - name: Push to Remote
-        shell: bash
+        shell: bash -l {0}
         run: |
           git config --global user.name "Action Bot"
           git config --global user.email "action@github.com"
