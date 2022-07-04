@@ -15,7 +15,6 @@ jobs:
           git clone \
             --depth 1  \
             --filter=blob:none \
-            --filter=tree:0 \
             --sparse \
             https://${{ secrets.GH_DEPLOY }}@github.com/sshockwave/data-arknights \
             arknights
@@ -53,7 +52,8 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
-          pip install requests
+          cd devops/radar/arknights
+          pip install -r requirements.txt
       - name: Update Contents
         shell: bash
         run: |
