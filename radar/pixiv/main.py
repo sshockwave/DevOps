@@ -181,6 +181,16 @@ def main():
     for img_path in tqdm(repo.convert_list, desc='JXL'):
         to_jxl(img_path)
         img_path.unlink()
+    import os
+    from concurrent.futures import ThreadPoolExecutor
+    num_threads = len(os.sched_getaffinity(0))
+    with ThreadPoolExecutor(num_threads) as exe:
+        for _, img_path in tqdm(
+            zip(exe.map(to_jxl, repo.convert_list), repo.convert_list),
+            desc='JXL',
+            total=len(repo.convert_list),
+        ):
+            img_path.unlink()
 
 if __name__ == '__main__':
     main()
