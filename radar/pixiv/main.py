@@ -21,6 +21,7 @@ class PixivRepo:
         self.base_path = Path(path)
         self.api = api
         self.post_list = []
+        self.convert_list = []
 
     @staticmethod
     def extract_urls(data):
@@ -45,8 +46,7 @@ class PixivRepo:
         with open(save_path, 'wb') as f:
             self.api.download(url, fname=f)
         if save_path.suffix != '.jxl':
-            to_jxl(save_path)
-            save_path.unlink()
+            self.convert_list.append(save_path)
 
     def handle_post(self, data):
         self.post_list.append(data)
@@ -175,9 +175,12 @@ def main():
     api.auth(refresh_token=args.token)
     repo = PixivRepo(args.output, api)
     from tqdm import tqdm
-    for img in tqdm(get_all_bookmark(api, args.uid)):
+    for img in tqdm(get_all_bookmark(api, args.uid), desc='DL'):
         repo.handle_post(img)
     repo.post_process()
+    for img_path in tqdm(repo.convert_list, desc='JXL'):
+        to_jxl(img_path)
+        img_path.unlink()
 
 if __name__ == '__main__':
     main()
