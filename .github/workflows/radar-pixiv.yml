@@ -1,0 +1,55 @@
+name: Update Pixiv Contents
+concurrency: pixiv
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      GH_DEPLOY:
+        required: true
+      PIXIV_REFRESH_TOKEN:
+        required: true
+      PIXIV_USER_ID:
+        required: true
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/data-illust'
+          path: illust
+          token: ${{ secrets.GH_DEPLOY }}
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/DevOps'
+          path: devops
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-version: latest
+          miniforge-variant: Mambaforge
+      - name: Install Dependencies
+        shell: bash -l {0}
+        run: |
+          mamba install python libjxl -c sshockwave -c conda-forge
+          cd devops/radar/pixiv
+          pip install -r requirements.txt
+      - name: Update Contents
+        shell: bash -l {0}
+        run: |
+          python devops/radar/pixiv/main.py \
+            -o ./illust/pixiv \
+            -u ${{ secrets.PIXIV_USER_ID }} \
+            -t ${{ secrets.PIXIV_REFRESH_TOKEN }} \
+            ;
+      - name: Push to Remote
+        shell: bash -l {0}
+        run: |
+          git config --global user.name "Action Bot"
+          git config --global user.email "action@github.com"
+          cd illust/
+          git add -A
+          if git commit -m "Update(pixiv)"
+          then
+            git push
+          fi

@@ -1,7 +1,7 @@
 name: Scheduler
 on:
   schedule:
-    - cron: '0 * * * *' # Every day
+    - cron: '0 */6 * * *' # Every day
 jobs:
   update-syosetu:
     name: Syosetu
@@ -10,4 +10,8 @@ jobs:
   update-arknights:
     name: Arknights
     uses: ./.github/workflows/radar-arknights.yml
+    secrets: inherit
+  update-pixiv:
+    name: Pixiv
+    uses: ./.github/workflows/radar-pixiv.yml
     secrets: inherit

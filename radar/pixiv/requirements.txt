@@ -1,0 +1,3 @@
+pixivpy3
+requests
+tqdm
