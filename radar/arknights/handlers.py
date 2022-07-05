@@ -29,15 +29,16 @@ def handle_avg_char(name, obj):
     image_sprite = get_image_sprite(image)
     save_loc = Path(name).with_suffix('')
     for g in info:
-        base = g[-1]
-        base_name = f'face{base["suffix"]}.png'
-        for v in g:
-            if v['facePos']['x'] < 0 or v['image'].size == base['image'].size:
+        base = None
+        for v in reversed(g):
+            if base is None or v['facePos']['x'] < 0 or v['image'].size == base['image'].size:
                 assert v['image'].width >= 1024
-                save_lossless(flip(v['image']), save_loc / f'face{v["suffix"]}.png')
+                save_lossless(flip(v['image']), save_loc / f'face{v["suffix"]}.jxl')
+                base = v
+                base_name = f'face{base["suffix"]}.jxl'
             else:
                 assert v['image'].width <= 400
-                delta_name = f'delta/data{v["suffix"]}.png'
+                delta_name = f'delta/data{v["suffix"]}.jxl'
                 save_lossless(flip(v['image']), save_loc / delta_name)
                 with saver.open(save_loc / f'face{v["suffix"]}.svg', 'w') as f:
                     f.write(f'''<?xml version="1.0" standalone="no"?>
