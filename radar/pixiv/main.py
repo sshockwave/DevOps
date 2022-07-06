@@ -170,6 +170,13 @@ def main():
     parser.add_argument('-u', '--uid', type=int, required=True)
     parser.add_argument('-o', '--output', type=Path, required=True)
     parser.add_argument('-t', '--token', type=str, required=True)
+    import os
+    parser.add_argument(
+        '-j', '--threads',
+        type=int,
+        required=False,
+        default=len(os.sched_getaffinity(0)),
+    )
     args = parser.parse_args()
     api = AppPixivAPI()
     api.auth(refresh_token=args.token)
@@ -178,12 +185,9 @@ def main():
     for img in tqdm(get_all_bookmark(api, args.uid), desc='DL'):
         repo.handle_post(img)
     repo.post_process()
-    for img_path in tqdm(repo.convert_list, desc='JXL'):
-        to_jxl(img_path)
-        img_path.unlink()
-    import os
     from concurrent.futures import ThreadPoolExecutor
-    num_threads = len(os.sched_getaffinity(0))
+    num_threads = args.threads
+    print(f'Running with {num_threads} threads')
     with ThreadPoolExecutor(num_threads) as exe:
         for _, img_path in tqdm(
             zip(exe.map(to_jxl, repo.convert_list), repo.convert_list),
