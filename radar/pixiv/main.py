@@ -1,5 +1,6 @@
 from pathlib import Path
 from pixivpy3 import AppPixivAPI
+from requests import delete
 
 def to_jxl(path: Path):
     import subprocess
@@ -127,6 +128,8 @@ class PixivRepo:
     def post_process(self):
         self.remove_all_json()
         for data in self.post_list:
+            del data['total_view']
+            del data['total_bookmarks']
             with open(self.get_json_save_path(data), 'w') as f:
                 import json
                 json.dump(data, f, indent=2)
