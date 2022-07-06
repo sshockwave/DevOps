@@ -113,7 +113,7 @@ class PixivRepo:
         for author_id, info in authors.items():
             readme.append(f'<li><a href="./{author_id}/README.md">{info["name"]}</a> ({num_posts[author_id]} posts)</li>')
         readme.append('</ul>')
-        return
+        return '\n'.join(readme)
         readme.append('<h2>Tags</h2>')
         for tname, posts in tag_posts.items():
             readme.append(f'<h3>{tname}</h3>')
