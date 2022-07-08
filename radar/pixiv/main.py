@@ -1,6 +1,5 @@
 from pathlib import Path
 from pixivpy3 import AppPixivAPI
-from requests import delete
 
 def to_jxl(path: Path):
     import subprocess
@@ -125,6 +124,19 @@ class PixivRepo:
             readme.append('</ul>')
         return '\n'.join(readme)
 
+    def remove_orphan(self):
+        import os
+        import re
+        prog = re.compile('^(\d+)_p\d+.jxl$')
+        for root, dirs, files in os.walk(self.base_path):
+            for name in files:
+                result = prog.match(name)
+                if result:
+                    pid = result.group(1)
+                    json_file = (Path(root) / pid).with_suffix('.json')
+                    if not json_file.exists():
+                        (Path(root) / name).unlink()
+
     def post_process(self):
         self.remove_all_json()
         for data in self.post_list:
@@ -198,6 +210,7 @@ def main():
             total=len(repo.convert_list),
         ):
             img_path.unlink()
+    repo.remove_orphan()
 
 if __name__ == '__main__':
     main()
