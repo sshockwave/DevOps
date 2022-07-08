@@ -78,6 +78,37 @@ conda install cxx-compiler make gdb
 ```
 ### Containers
 Docker is a typical example of container applications.
+
+Template `docker-compose.yml`:
+```yaml
+version: "3.8"
+networks:
+  net1:
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Asia/Shanghai
+    volumes:
+      - /host/path:/container/path:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8080:80 # host_port:container_port
+    restart: unless-stopped
+    devices:
+      - /dev/dri:/dev/dri
+    mem_limit: 3g
+    depends_on:
+      - web
+    networks:
+      - net1
+  web:
+    image: nginx
+```
+
 ### Browsers
 Sandbox applications based on JavaScript or WebAssembly.
 
