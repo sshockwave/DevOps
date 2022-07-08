@@ -90,6 +90,8 @@ option.add_argument('--disable-blink-features=AutomationControlled')
 driver = webdriver.Chrome(options=option)
 ```
 ### WSL
+### Web
+Nginx example configuration: https://www.nginx.com/resources/wiki/start/topics/examples/full/
 ## Network Settings
 ### Mirrors and Proxies
 For the highlighting of these config files,
