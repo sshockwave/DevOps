@@ -150,8 +150,8 @@ class PixivRepo:
     def post_process(self):
         self.remove_all_json()
         for data in self.post_list:
-            del data['total_view']
-            del data['total_bookmarks']
+            data.pop('total_view', None)
+            data.pop('total_bookmarks', None)
             with open(self.get_json_save_path(data), 'w') as f:
                 import json
                 json.dump(data, f, indent=2)
