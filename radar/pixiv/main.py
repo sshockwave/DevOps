@@ -49,22 +49,32 @@ class PixivRepo:
             self.convert_list.append(save_path)
 
     def handle_post(self, data):
-        self.post_list.append(data)
         img_type = data['type']
         assert img_type in ['illust', 'ugoira', 'manga']
 
         # Save images
         url_list = self.extract_urls(data)
         old_json = self.get_json_save_path(data)
+        removed = False
+        skip_download = False
+        if url_list == ['https://s.pximg.net/common/images/limit_unknown_360.png']:
+            removed = True
         if old_json.exists():
             with open(old_json, 'r') as f:
                 import json
                 old_data = json.load(f)
             old_url_list = self.extract_urls(old_data)
+            if removed:
+                data = old_data
+                url_list = old_url_list
             if url_list == old_url_list:
-                return
-            for url in old_url_list:
-                (self.get_img_save_dir(data) / get_url_filename(url)).with_suffix('.jxl').unlink()
+                skip_download = True
+            else:
+                for url in old_url_list:
+                    (self.get_img_save_dir(data) / get_url_filename(url)).with_suffix('.jxl').unlink()
+        self.post_list.append(data)
+        if skip_download:
+            return
         for url in url_list:
             self.download_img(data, url)
 
