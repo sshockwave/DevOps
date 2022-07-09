@@ -163,13 +163,15 @@ class TorrentRepo:
             port=rpc_info.port or 9091,
         )
         local = set(self.all_torrent_infohash())
-        remote = set(t.hashString for t in c.get_torrents())
+        torrents = c.get_torrents()
+        download_dir = {t.hashString: t.download_dir for t in torrents}
+        remote = set(t.hashString for t in torrents)
         for infohash in remote.difference(local):
             import requests
             from urllib.parse import urljoin
-            tr_name = f'{infohash}.torrent'
-            mkwritable(self.watch_dir / tr_name)
-            with open(self.watch_dir / tr_name, 'wb') as f:
+            save_path = self.watch_dir / Path(download_dir[infohash]).relative_to('/downloads') / f'{infohash}.torrent'
+            mkwritable(save_path)
+            with open(save_path, 'wb') as f:
                 f.write(requests.get(urljoin(dl_url, f'{infohash}.torrent')).content)
         unused = local.difference(remote)
         if len(unused) > 0:
