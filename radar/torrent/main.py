@@ -143,8 +143,8 @@ class TorrentRepo:
     def all_torrent_infohash(self):
         infohash = set()
         import os
-        for root, dirs, files in os.walk(self.watch_dir):
-            for name in sorted(files):
+        for root, dirs, files in os.walk(self.path):
+            for name in files:
                 if not name.endswith('.torrent'):
                     continue
                 infohash.add(Path(name).stem)
@@ -166,12 +166,10 @@ class TorrentRepo:
         torrents = c.get_torrents()
         torrents = {t.hashString.lower(): t for t in torrents}
         remote = set(torrents)
-        print('Local hash strings:', local)
-        print('Remote hash strings: ', remote)
         for infohash in remote.difference(local):
             import requests
             from urllib.parse import urljoin
-            save_path = self.watch_dir / Path(download_dir[infohash]).relative_to('/downloads') / f'{infohash}.torrent'
+            save_path = self.watch_dir / Path(torrents[infohash].download_dir).relative_to('/downloads') / f'{infohash}.torrent'
             mkwritable(save_path)
             with open(save_path, 'wb') as f:
                 f.write(requests.get(urljoin(dl_url, f'{infohash}.torrent')).content)
