@@ -166,6 +166,8 @@ class TorrentRepo:
         torrents = c.get_torrents()
         download_dir = {t.hashString: t.download_dir for t in torrents}
         remote = set(t.hashString for t in torrents)
+        print('Local hash strings: ', remote)
+        print('Remote hash strings: ', remote)
         for infohash in remote.difference(local):
             import requests
             from urllib.parse import urljoin
