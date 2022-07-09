@@ -15,3 +15,7 @@ jobs:
     name: Pixiv
     uses: ./.github/workflows/radar-pixiv.yml
     secrets: inherit
+  update-torrent:
+    name: Torrent
+    uses: ./.github/workflows/radar-torrent.yml
+    secrets: inherit

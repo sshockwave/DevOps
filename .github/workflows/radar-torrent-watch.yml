@@ -1,0 +1,43 @@
+name: Update watched torrents
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      GH_DEPLOY:
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/data-torrent'
+          path: torrent
+          token: ${{ secrets.GH_DEPLOY }}
+      - uses: actions/checkout@v3
+        with:
+          repository: 'sshockwave/DevOps'
+          path: devops
+      - name: Install Dependencies
+        shell: bash -l {0}
+        run: |
+          cd devops/radar/torrent/
+          pip install -r requirements.txt
+      - name: Update Torrents
+        shell: bash -l {0}
+        run: |
+          python devops/radar/torrent/main.py \
+            -r ./torrent \
+            -w \
+            ;
+      - name: Push to Remote
+        shell: bash -l {0}
+        run: |
+          git config --global user.name "Action Bot"
+          git config --global user.email "action@github.com"
+          cd torrent/
+          git add -A
+          if git commit -m "Update(transmission)"
+          then
+            git push
+          fi
