@@ -5,6 +5,9 @@ def get_parser():
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('-r', '--repo', type=Path, nargs=1, help='Path to repo')
+    parser.add_argument('-w', '--watch', action='store_true', help='Whether to add torrents from watch dir')
+    parser.add_argument('-t', '--transmission', required=False, type=str, help='Transmission rpc url')
+    parser.add_argument('-d', '--download-url', required=False, type=str, help='Where to download torrents')
     return parser
 
 def size_repr(size):
@@ -57,9 +60,13 @@ class Tree:
         lines.append('</ul>')
         lines.append('</details>')
 
+def mkwritable(path: Path):
+    path.parent.mkdir(exist_ok=True, parents=True)
+
 class TorrentRepo:
     def __init__(self, base_path: Path):
         self.path = base_path
+        self.watch_dir = self.path / 'watch'
 
     @staticmethod
     def get_infohash(info):
@@ -72,6 +79,7 @@ class TorrentRepo:
         data = bdecode(file_content)
         infohash = self.get_infohash(data['info'])
         file_path = self.path / rel_path / infohash
+        mkwritable(file_path)
         with open(file_path.with_suffix('.torrent'), 'wb') as f:
             f.write(bencode({'info': data['info']}))
         meta_path = file_path.with_suffix('.yml')
@@ -83,13 +91,14 @@ class TorrentRepo:
         del data['info']
         if not any(t == data for t in meta):
             meta.append(data)
+        mkwritable(meta_path)
         with open(meta_path, 'w') as f:
             import yaml
             yaml.dump(list(meta), f, allow_unicode=True)
 
     def scan_watch(self, watch_path=None):
         if watch_path is None:
-            watch_path = self.path / 'watch'
+            watch_path = self.watch_dir
         if not watch_path.exists():
             return
         import os
@@ -130,10 +139,52 @@ class TorrentRepo:
                 lines.append(self.gen_toc_html(root / name, (rel_path / name).as_posix()))
         return '\n'.join(lines)
 
+    def all_torrent_infohash(self):
+        infohash = set()
+        import os
+        for root, dirs, files in os.walk(self.watch_dir):
+            for name in sorted(files):
+                if not name.endswith('.torrent'):
+                    continue
+                infohash.add(Path(name).stem)
+        return list(infohash)
+
+    def download_from_transmission(self, rpc_url, dl_url):
+        from transmission_rpc import Client
+        from urllib.parse import urlparse
+        rpc_info = urlparse(rpc_url)
+        from urllib.parse import unquote
+        c = Client(
+            protocol=rpc_info.scheme,
+            username=rpc_info.username,
+            password=unquote(rpc_info.password),
+            host=rpc_info.hostname,
+            port=rpc_info.port or 9091,
+        )
+        local = set(self.all_torrent_infohash())
+        remote = set(t.hashString for t in c.get_torrents())
+        for infohash in remote.difference(local):
+            import requests
+            from urllib.parse import urljoin
+            tr_name = f'{infohash}.torrent'
+            mkwritable(self.watch_dir / tr_name)
+            with open(self.watch_dir / tr_name, 'wb') as f:
+                f.write(requests.get(urljoin(dl_url, f'{infohash}.torrent')).content)
+        unused = local.difference(remote)
+        if len(unused) > 0:
+            print('Torrents not present in remote:')
+            for t in unused:
+                print(t)
+
 def main():
     args = get_parser().parse_args()
     repo = TorrentRepo(args.repo[0])
-    repo.scan_watch()
+    if args.transmission is not None:
+        assert args.download_url is not None
+        repo.download_from_transmission(args.transmission, args.download_url)
+    if args.watch:
+        repo.scan_watch()
+    repo.path.mkdir(exist_ok=True, parents=True)
     with open(repo.path / 'README.md', 'w') as f:
         f.write(repo.gen_dir_html(repo.path))
 
