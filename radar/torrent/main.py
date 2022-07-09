@@ -164,9 +164,9 @@ class TorrentRepo:
         )
         local = set(self.all_torrent_infohash())
         torrents = c.get_torrents()
-        download_dir = {t.hashString: t.download_dir for t in torrents}
-        remote = set(t.hashString for t in torrents)
-        print('Local hash strings: ', remote)
+        torrents = {t.hashString.lower(): t for t in torrents}
+        remote = set(torrents)
+        print('Local hash strings:', local)
         print('Remote hash strings: ', remote)
         for infohash in remote.difference(local):
             import requests
