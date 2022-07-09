@@ -87,7 +87,8 @@ class TorrentRepo:
         if meta_path.exists():
             with open(meta_path, 'r') as f:
                 import yaml
-                meta += yaml.load(f)
+                from yaml import Loader
+                meta += yaml.load(f, Loader=Loader)
         del data['info']
         if not any(t == data for t in meta):
             meta.append(data)
