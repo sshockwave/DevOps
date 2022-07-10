@@ -215,6 +215,8 @@ class TorrentRepo:
             with open(save_path, 'wb') as f:
                 res = requests.get(urljoin(dl_url, f'{infohash}.torrent'))
                 assert res.ok
+                if len(res.content) == 0:
+                    pass
                 f.write(res.content)
         unused = local.difference(remote)
         if len(unused) > 0:
