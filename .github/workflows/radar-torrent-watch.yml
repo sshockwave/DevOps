@@ -18,11 +18,6 @@ jobs:
         with:
           repository: 'sshockwave/DevOps'
           path: devops
-      - name: Install Dependencies
-        shell: bash -l {0}
-        run: |
-          cd devops/radar/torrent/
-          pip install -r requirements.txt
       - name: Update Torrents
         shell: bash -l {0}
         run: |
