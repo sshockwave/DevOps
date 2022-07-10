@@ -150,6 +150,47 @@ class TorrentRepo:
                 infohash.add(Path(name).stem)
         return list(infohash)
 
+    def gen_all_torrent_html(self):
+        lines = []
+        def dfs1(path: Path):
+            ret = dict()
+            for t in path.iterdir():
+                v = t
+                if t.is_dir():
+                    v = dfs1(t)
+                elif t.suffix != '.torrent':
+                    v = None
+                if v is not None:
+                    ret[t.name] = v
+            if len(ret) > 0:
+                return ret
+        def dfs2(entries):
+            if isinstance(entries, dict):
+                for t, v in entries.items():
+                    if isinstance(v, dict):
+                        while isinstance(v, dict) and len(v) == 1:
+                            for k, v2 in v.items():
+                                pass
+                            if not isinstance(v2, dict):
+                                break
+                            t += '/' + k
+                            v = v2
+                        lines.append(f'<li>{t}<ul>')
+                        dfs2(v)
+                        lines.append('</ul></li>')
+                    else:
+                        dfs2(v)
+            else:
+                path: Path = entries
+                with open(path, 'rb') as f:
+                    from bencode import bdecode
+                    info = bdecode(f.read())['info']
+                lines.append(f'<li><a href="{path.relative_to(self.path)}">{info["name"]}</a> <code>{path.stem}</code></li>')
+        lines.append('<ul>')
+        dfs2(dfs1(self.path))
+        lines.append('</ul>')
+        return '\n'.join(lines)
+
     def download_from_transmission(self, rpc_url, dl_url):
         from transmission_rpc import Client
         from urllib.parse import urlparse
@@ -195,6 +236,9 @@ def main():
             continue
         with open(p / 'README.md', 'w') as f:
             f.write(repo.gen_dir_html(p))
+    with open(repo.path / 'README.md', 'w') as f:
+        f.write('# Torrents\n')
+        f.write(repo.gen_all_torrent_html())
 
 if __name__ == '__main__':
     main()
