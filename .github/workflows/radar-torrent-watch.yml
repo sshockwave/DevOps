@@ -32,7 +32,7 @@ jobs:
           git config --global user.email "action@github.com"
           cd torrent/
           git add -A
-          if git commit -m "Update(transmission)"
+          if git commit -m "Update(watch) add torrents"
           then
             git push
           fi
