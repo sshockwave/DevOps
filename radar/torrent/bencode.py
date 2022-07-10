@@ -3,10 +3,9 @@ from typing import List
 class BTFailure(Exception):
     pass
 
-
 def decode_int(x, f):
     f += 1
-    newf = x.index(ord('e'), f)
+    newf = x.index(b'e', f)
     n = int(x[f:newf])
     if x[f] == ord('-'):
         if x[f + 1] == ord('0'):
