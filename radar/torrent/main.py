@@ -108,12 +108,14 @@ class TorrentRepo:
             for name in files:
                 if name.endswith('.torrent'):
                     with open(root / name, 'rb') as f:
+                        f.seek(0)
                         self.add_raw_torrent(f.read(), root.relative_to(watch_path))
                     (root / name).unlink()
 
     def gen_toc_html(self, torrent_path: Path, torrent_link: str):
         from bencode import bdecode
         with open(torrent_path, 'rb') as f:
+            f.seek(0)
             info = bdecode(f.read())['info']
         assert self.get_infohash(info) == torrent_path.stem
         root = Tree(f'<a href="{torrent_link}">{info["name"]}</a>')
@@ -184,6 +186,7 @@ class TorrentRepo:
                 path: Path = entries
                 with open(path, 'rb') as f:
                     from bencode import bdecode
+                    f.seek(0)
                     info = bdecode(f.read())['info']
                 lines.append(f'<li><a href="{path.relative_to(self.path)}">{info["name"]}</a> <code>{path.stem}</code></li>')
         lines.append('<ul>')
