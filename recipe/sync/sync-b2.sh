@@ -30,7 +30,7 @@ INFO_FILE="${LOG_PATH}/info/${LOG_MON}/${LOG_TIME}.log"
 ERROR_FILE="${LOG_PATH}/${LOG_TIME}.err"
 BACKUP_PATH="${PATH_DEV}/inbound/backup/${LOG_TIME}"
 RC_FLAGS=(
-	--filter-from syno-filter.txt
+	--filter-from syno-filters.txt
 	--log-level INFO
 	--log-file "${INFO_FILE}"
 	--stats 0
