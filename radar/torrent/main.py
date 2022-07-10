@@ -188,8 +188,9 @@ def main():
     if args.watch:
         repo.scan_watch()
     repo.path.mkdir(exist_ok=True, parents=True)
-    with open(repo.path / 'README.md', 'w') as f:
-        f.write(repo.gen_dir_html(repo.path))
+    for p in repo.path.iterdir():
+        with open(p / 'README.md', 'w') as f:
+            f.write(repo.gen_dir_html(p))
 
 if __name__ == '__main__':
     main()
