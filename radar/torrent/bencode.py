@@ -49,6 +49,8 @@ decode_func.update({str(i): decode_string for i in range(10)})
 decode_func = {ord(k): v for k, v in decode_func.items()}
 
 def bdecode(x: bytes):
+    if x[0] not in decode_func:
+        print(x)
     r, l = decode_func[x[0]](x, 0)
     assert l == len(x), "invalid bencoded value (data after valid prefix)"
     return r
