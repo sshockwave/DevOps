@@ -189,6 +189,10 @@ def main():
         repo.scan_watch()
     repo.path.mkdir(exist_ok=True, parents=True)
     for p in repo.path.iterdir():
+        if not p.is_dir():
+            continue
+        if p.name == '.git':
+            continue
         with open(p / 'README.md', 'w') as f:
             f.write(repo.gen_dir_html(p))
 
