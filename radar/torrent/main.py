@@ -213,7 +213,9 @@ class TorrentRepo:
             save_path = self.watch_dir / Path(torrents[infohash].download_dir).relative_to('/downloads') / f'{infohash}.torrent'
             mkwritable(save_path)
             with open(save_path, 'wb') as f:
-                f.write(requests.get(urljoin(dl_url, f'{infohash}.torrent')).content)
+                res = requests.get(urljoin(dl_url, f'{infohash}.torrent'))
+                assert res.ok
+                f.write(res.content)
         unused = local.difference(remote)
         if len(unused) > 0:
             print('Torrents not present in remote:')
