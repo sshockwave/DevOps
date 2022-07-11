@@ -105,6 +105,9 @@ services:
       - web
     networks:
       - net1
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command: []
   web:
     image: nginx
 ```
