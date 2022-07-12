@@ -20,7 +20,7 @@ jobs:
             https://${{ secrets.GH_DEPLOY }}@github.com/sshockwave/data-arknights \
             arknights
           cd arknights
-          git sparse-checkout set hot_update_list.json
+          git sparse-checkout set --no-cone /hot_update_list.json
       - uses: actions/checkout@v3
         with:
           repository: 'sshockwave/DevOps'
