@@ -78,11 +78,11 @@ class PixivRepo:
         for url in url_list:
             self.download_img(data, url)
 
-    def remove_all_json(self):
+    def remove_all_files_with_suffix(self, suf):
         import os
         for root, dirs, files in os.walk(self.base_path):
             for name in files:
-                if name.endswith('.json'):
+                if name.endswith(suf):
                     os.remove(os.path.join(root, name))
 
     @staticmethod
@@ -148,7 +148,8 @@ class PixivRepo:
                         (Path(root) / name).unlink()
 
     def post_process(self):
-        self.remove_all_json()
+        self.remove_all_files_with_suffix('.json')
+        self.remove_all_files_with_suffix('.md')
         for data in self.post_list:
             data.pop('total_view', None)
             data.pop('total_bookmarks', None)
