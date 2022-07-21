@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/css/lightgallery-bundle.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css">
+</head>
+
+<body>
+
+  <h1 id="caption">Caption</h1>
+  <div id="lightgallery">
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/lightgallery.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/zoom/lg-zoom.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.5.0/plugins/thumbnail/lg-thumbnail.umd.js"></script>
+  <script type="text/javascript">
+    let gallery_el = 'lightgallery';
+    $('#' + gallery_el).justifiedGallery({
+      rowHeight: 200,
+    }).on("jg.complete", function() {
+      window.lightGallery(document.getElementById(gallery_el), {
+        plugins: [lgZoom, lgThumbnail],
+        // speed: 100,
+        thumbnail: true,
+        swipeToClose: false,
+        download: false,
+      });
+    });
+  </script>
+</body>
+
+</html>
